@@ -70,23 +70,30 @@ export const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
     padding: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   statItem: {
     alignItems: 'center',
+    flex: 1,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
     color: 'white',
   },
   statLabel: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '500',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '600',
     marginTop: 4,
+    textAlign: 'center',
   },
   scrollContent: {
     paddingBottom: 100, // Espace pour le FAB
@@ -215,7 +222,6 @@ export const styles = StyleSheet.create({
   tabsContainer: {
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -294,28 +300,29 @@ export const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: 8,
   },
-  priorityButtons: {
+  priorityCheckboxes: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: 16,
+    maxHeight: 120, // Limite la hauteur pour éviter de sortir du modal
   },
-  priorityButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    borderWidth: 1,
+  priorityCheckboxItem: {
+    flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    minWidth: '45%',
   },
-  priorityButtonText: {
-    fontSize: 12,
+  priorityCheckboxText: {
+    fontSize: 14,
     fontWeight: '600',
+    marginLeft: 8,
   },
   
   // Assignee dropdown styles
-  assigneeContainer: {
+  modalAssigneeContainer: {
     marginBottom: 12,
   },
-  assigneeLabel: {
+  modalAssigneeLabel: {
     fontSize: 14,
     fontWeight: '500',
     color: colors.textPrimary,
@@ -345,4 +352,43 @@ export const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginLeft: 8,
   },
+  ticketInfo: {
+    flex: 1,
+  },
+  priorityBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  priorityText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'white',
+  },
+  ticketListContent: {
+    paddingBottom: 20,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  projectStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 16,
+  },
+  kanbanBoard: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 20,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 20,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.primary,
+  },
+  
 });

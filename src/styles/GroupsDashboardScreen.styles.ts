@@ -346,12 +346,29 @@ export const styles = StyleSheet.create({
   },
   
   // FAB
-  fab: {
+  fabContainer: {
     position: 'absolute',
-    margin: 20,
-    right: 0,
-    bottom: 0,
+    bottom: 20,
+    right: 20,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  fab: {
     backgroundColor: colors.primary,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  assignFab: {
+    backgroundColor: colors.success,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   
   // Modal styles
@@ -447,5 +464,40 @@ export const styles = StyleSheet.create({
   },
   groupOptionInfo: {
     flex: 1,
+  },
+  
+  // Missing styles
+  expandButton: {
+    padding: 8,
+  },
+  buttonContainer: {
+    marginTop: 16,
+  },
+  button: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  buttonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  
+  // Dropdown styles
+  dropdownButton: {
+    marginBottom: 8,
+    borderColor: colors.border,
+  },
+  dropdownContent: {
+    justifyContent: 'flex-start',
+  },
+  dropdownLabel: {
+    textAlign: 'left',
+    color: colors.textPrimary,
+  },
+  projectIcon: {
+    fontSize: 16,
+    marginRight: 8,
   },
 });

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Animated, TouchableOpacity, Text, Alert, Dimensions } from 'react-native';
-import { Title, FAB, Portal, Modal, TextInput, Button, ActivityIndicator, Card, Chip, IconButton, Avatar, Badge } from 'react-native-paper';
+import { View, ScrollView, TouchableOpacity, Text, Alert, Dimensions, RefreshControl } from 'react-native';
+import { Title, FAB, TextInput, Card, Chip, IconButton, Avatar, Badge, SegmentedButtons, Menu, Divider } from 'react-native-paper';
 import { useProject, TeamGroup, User } from '../context/ProjectContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../utils/colors';
 import { sharedStyles } from '../styles/shared.styles';
 import { styles } from '../styles/TeamManagementScreen.styles';
+import { Header, GenericModal, AnimatedView, BackButton, ContextMenu } from '../components';
 
 const { width } = Dimensions.get('window');
 
@@ -23,62 +24,53 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
     inviteUserToProject, 
     removeUserFromProject, 
     updateUserRole,
-    createTeamGroup,
-    updateTeamGroup,
-    deleteTeamGroup,
     addUserToGroup,
     removeUserFromGroup,
-    assignTicketToUser,
-    assignTicketToGroup,
-    autoAssignTickets
+    loading: projectLoading 
   } = useProject();
   const { user } = useAuth();
-  
-  const [activeTab, setActiveTab] = useState<'members'>('members');
+
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState<string>('');
+  const [selectedUser, setSelectedUser] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [slideAnim] = useState(new Animated.Value(50));
+  const [showMenu, setShowMenu] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const project = projects.find(p => p.id === projectId);
-  const isAdmin = project?.createdBy === user?.uid;
+  const projectMembers = projectUsers.filter(u => project?.members.includes(u.id));
+  const projectGroups = teamGroups.filter(g => project?.teamGroups.includes(g.id));
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    // Simuler un refresh - en réalité, les données se mettent à jour automatiquement
+    setTimeout(() => setRefreshing(false), 1000);
+  };
 
   const handleInviteUser = async () => {
-    if (!inviteEmail.trim()) return;
-    
+    if (!inviteEmail.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir une adresse email');
+      return;
+    }
+
     setLoading(true);
     try {
       await inviteUserToProject(projectId, inviteEmail.trim());
+      Alert.alert('Succès', 'Invitation envoyée avec succès');
       setInviteEmail('');
       setShowInviteModal(false);
-      Alert.alert('Succès', 'Invitation envoyée avec succès');
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Erreur', 'Impossible d\'envoyer l\'invitation');
     } finally {
       setLoading(false);
     }
   };
 
-
   const handleRemoveUser = async (userId: string) => {
     Alert.alert(
-      'Confirmer',
+      'Confirmer la suppression',
       'Êtes-vous sûr de vouloir retirer cet utilisateur du projet ?',
       [
         { text: 'Annuler', style: 'cancel' },
@@ -100,152 +92,292 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
 
 
 
-  const renderMembers = () => (
-    <View style={styles.membersContainer}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Membres de l'équipe</Text>
-        {isAdmin && (
-          <Button
-            mode="outlined"
-            onPress={() => setShowInviteModal(true)}
-            style={styles.inviteButton}
-            icon="account-plus"
-            compact
-          >
-            Inviter
-          </Button>
-        )}
-      </View>
+  const handleAddUserToGroup = async () => {
+    if (!selectedUser || !selectedGroup) {
+      Alert.alert('Erreur', 'Veuillez sélectionner un utilisateur et un groupe');
+      return;
+    }
 
-      {project?.members.map((memberId) => {
-        const member = projectUsers.find(u => u.id === memberId);
-        const isCurrentUser = memberId === user?.uid;
-        const isProjectAdmin = memberId === project?.createdBy;
-        
-        return (
-          <Card key={memberId} style={styles.memberCard}>
-            <Card.Content style={styles.memberContent}>
+    setLoading(true);
+    try {
+      await addUserToGroup(selectedGroup, selectedUser);
+      Alert.alert('Succès', 'Utilisateur ajouté au groupe');
+      setSelectedUser('');
+      setSelectedGroup('');
+      setShowAddToGroupModal(false);
+    } catch (error: any) {
+      Alert.alert('Erreur', 'Impossible d\'ajouter l\'utilisateur au groupe');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveUserFromGroup = async (groupId: string, userId: string) => {
+    Alert.alert(
+      'Confirmer la suppression',
+      'Êtes-vous sûr de vouloir retirer cet utilisateur du groupe ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Retirer', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await removeUserFromGroup(groupId, userId);
+              Alert.alert('Succès', 'Utilisateur retiré du groupe');
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible de retirer l\'utilisateur du groupe');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+
+  const renderUser = (user: User, index: number) => {
+    const userGroups = projectGroups.filter(g => g.members.includes(user.id));
+    
+    return (
+      <AnimatedView key={user.id} animationType="both" delay={index * 100}>
+        <Card style={styles.memberCard}>
+          <Card.Content>
+            <View style={styles.memberHeader}>
               <View style={styles.memberInfo}>
-                <View style={[styles.memberAvatar, isProjectAdmin && styles.adminAvatar]}>
-                  <Text style={styles.memberAvatarText}>
-                    {member?.displayName?.charAt(0) || 'U'}
-                  </Text>
-                </View>
+                <Avatar.Text 
+                  size={48} 
+                  label={user.displayName.charAt(0).toUpperCase()} 
+                  style={[styles.memberAvatar, { backgroundColor: colors.primary }]}
+                />
                 <View style={styles.memberDetails}>
-                  <Text style={styles.memberName}>
-                    {member?.displayName || 'Utilisateur inconnu'}
-                  </Text>
-                  <Text style={styles.memberEmail}>
-                    {member?.email || 'Email non disponible'}
-                  </Text>
-                  <View style={styles.memberBadges}>
-                    {isProjectAdmin && (
-                      <Text style={styles.adminBadge}>Admin</Text>
-                    )}
-                    {isCurrentUser && (
-                      <Text style={styles.currentUserBadge}>Vous</Text>
-                    )}
-                  </View>
+                  <Text style={styles.memberName}>{user.displayName}</Text>
+                  <Text style={styles.memberEmail}>{user.email}</Text>
+                  {userGroups.length > 0 && (
+                    <View style={styles.memberGroups}>
+                      {userGroups.map(group => (
+                        <Chip 
+                          key={group.id} 
+                          style={[styles.groupChip, { backgroundColor: group.color }]}
+                          textStyle={styles.groupChipText}
+                        >
+                          {group.name}
+                        </Chip>
+                      ))}
+                    </View>
+                  )}
                 </View>
               </View>
-              {isAdmin && !isCurrentUser && (
-                <TouchableOpacity
-                  onPress={() => handleRemoveUser(memberId)}
-                  style={styles.removeButton}
-                >
-                  <Text style={styles.removeButtonText}>×</Text>
-                </TouchableOpacity>
-              )}
-            </Card.Content>
-          </Card>
-        );
-      })}
-    </View>
-  );
+              <View style={styles.memberActions}>
+                <Badge style={styles.roleBadge}>
+                  {user.id === project?.createdBy ? 'Propriétaire' : 'Membre'}
+                </Badge>
+                {user.id !== project?.createdBy && (
+                  <ContextMenu
+                    visible={showMenu === user.id}
+                    onDismiss={() => setShowMenu(null)}
+                    onOpen={() => setShowMenu(user.id)}
+                    items={[
+                      {
+                        title: 'Retirer du projet',
+                        icon: 'account-remove',
+                        onPress: () => handleRemoveUser(user.id),
+                        titleStyle: { color: colors.error },
+                      },
+                    ]}
+                  />
+                )}
+              </View>
+            </View>
+          </Card.Content>
+        </Card>
+      </AnimatedView>
+    );
+  };
 
+
+  if (projectLoading) {
+    return (
+      <View style={sharedStyles.container}>
+        <Header 
+          title="Gestion d'Équipe" 
+          subtitle={project?.name || 'Chargement...'}
+          rightElement={<BackButton onPress={() => navigation.goBack()} />}
+        />
+        <View style={sharedStyles.loadingContainer}>
+          <Text style={{ fontSize: 16, color: colors.textSecondary }}>Chargement...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!project) {
+    return (
+      <View style={sharedStyles.container}>
+        <Header 
+          title="Gestion d'Équipe" 
+          subtitle="Projet non trouvé"
+          rightElement={<BackButton onPress={() => navigation.goBack()} />}
+        />
+        <View style={sharedStyles.emptyContainer}>
+          <Text style={sharedStyles.emptyTitle}>Projet non trouvé</Text>
+          <Text style={sharedStyles.emptyDescription}>
+            Le projet demandé n'existe pas ou vous n'y avez pas accès.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Animated.View 
-        style={[
-          styles.header,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
+    <View style={sharedStyles.container}>
+      <Header 
+        title="Gestion d'Équipe" 
+        subtitle={project.name}
+        rightElement={<BackButton onPress={() => navigation.goBack()} />}
+      />
+
+      <ScrollView 
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        <View style={styles.headerContent}>
-          <View style={styles.projectInfo}>
-            <Text style={styles.projectTitle}>Gestion d'équipe</Text>
-            <Text style={styles.projectDescription}>
-              {project?.name} • {project?.members.length || 0} membre{project?.members.length !== 1 ? 's' : ''}
-            </Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.backButton} 
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.backButtonText}>← Retour</Text>
-          </TouchableOpacity>
+        {/* Statistiques */}
+        <View style={styles.statsContainer}>
+          <Card style={styles.statCard}>
+            <Card.Content style={styles.statContent}>
+              <Text style={styles.statIcon}>👥</Text>
+              <Text style={styles.statNumber}>{projectMembers.length}</Text>
+              <Text style={styles.statLabel}>Membres</Text>
+            </Card.Content>
+          </Card>
+          <Card style={styles.statCard}>
+            <Card.Content style={styles.statContent}>
+              <Text style={styles.statIcon}>🏷️</Text>
+              <Text style={styles.statNumber}>{projectGroups.length}</Text>
+              <Text style={styles.statLabel}>Groupes</Text>
+            </Card.Content>
+          </Card>
         </View>
-      </Animated.View>
 
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderMembers()}
+        {/* Section des membres */}
+        <View style={styles.tabContent}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Membres du Projet</Text>
+            <TouchableOpacity
+              style={styles.inviteButton}
+              onPress={() => setShowInviteModal(true)}
+            >
+              <Text style={styles.inviteButtonText}>+ Inviter</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {projectMembers.length === 0 ? (
+            <AnimatedView 
+              style={styles.emptyState}
+              animationType="fade"
+            >
+              <Text style={styles.emptyIcon}>👥</Text>
+              <Text style={sharedStyles.emptyTitle}>Aucun membre</Text>
+              <Text style={sharedStyles.emptyDescription}>
+                Invitez des utilisateurs à rejoindre ce projet.
+              </Text>
+            </AnimatedView>
+          ) : (
+            projectMembers.map((member, index) => renderUser(member, index))
+          )}
+        </View>
       </ScrollView>
 
-      {/* Modal d'invitation */}
-      <Portal>
-        <Modal
-          visible={showInviteModal}
-          onDismiss={() => setShowInviteModal(false)}
-          contentContainerStyle={sharedStyles.modalContent}
-        >
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalIcon}>📧</Text>
-            <Text style={sharedStyles.modalTitle}>Inviter un membre</Text>
-          </View>
-          
-          <TextInput
-            label="Email du membre"
-            value={inviteEmail}
-            onChangeText={setInviteEmail}
-            mode="outlined"
-            style={sharedStyles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
-            left={<TextInput.Icon icon="email" />}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          
-          <View style={sharedStyles.modalButtons}>
-            <Button
-              mode="outlined"
-              onPress={() => setShowInviteModal(false)}
-              style={[sharedStyles.modalButton, sharedStyles.secondaryButton]}
-              labelStyle={sharedStyles.secondaryButtonText}
-              icon="close"
-            >
-              Annuler
-            </Button>
-            <Button
-              mode="contained"
-              onPress={handleInviteUser}
-              style={[sharedStyles.modalButton, sharedStyles.primaryButton]}
-              labelStyle={sharedStyles.primaryButtonText}
-              disabled={loading || !inviteEmail.trim()}
-              icon={loading ? undefined : "send"}
-            >
-              {loading ? <ActivityIndicator color="white" size="small" /> : 'Inviter'}
-            </Button>
-          </View>
-        </Modal>
-      </Portal>
+      {/* Modals */}
+      <GenericModal
+        visible={showInviteModal}
+        onDismiss={() => setShowInviteModal(false)}
+        title="Inviter un utilisateur"
+        icon="account-plus"
+        primaryButtonText="Inviter"
+        onPrimaryPress={handleInviteUser}
+        onSecondaryPress={() => setShowInviteModal(false)}
+        loading={loading}
+        disabled={!inviteEmail.trim()}
+        primaryIcon="send"
+      >
+        <TextInput
+          label="Adresse email"
+          value={inviteEmail}
+          onChangeText={setInviteEmail}
+          mode="outlined"
+          style={sharedStyles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          outlineColor={colors.border}
+          activeOutlineColor={colors.primary}
+          left={<TextInput.Icon icon="email" />}
+        />
+      </GenericModal>
 
+
+      <GenericModal
+        visible={showAddToGroupModal}
+        onDismiss={() => setShowAddToGroupModal(false)}
+        title="Ajouter au groupe"
+        icon="account-plus"
+        primaryButtonText="Ajouter"
+        onPrimaryPress={handleAddUserToGroup}
+        onSecondaryPress={() => setShowAddToGroupModal(false)}
+        loading={loading}
+        disabled={!selectedUser || !selectedGroup}
+        primaryIcon="check"
+      >
+        <View style={styles.modalSection}>
+          <Text style={styles.modalLabel}>Utilisateur</Text>
+          <Menu
+            visible={false}
+            onDismiss={() => {}}
+            anchor={
+              <TouchableOpacity style={styles.modalButton}>
+                <Text style={styles.modalButtonText}>
+                  {selectedUser ? projectMembers.find(u => u.id === selectedUser)?.displayName : 'Sélectionner un utilisateur'}
+                </Text>
+                <Text style={styles.modalArrow}>▼</Text>
+              </TouchableOpacity>
+            }
+          >
+            {projectMembers.map((member) => (
+              <Menu.Item
+                key={member.id}
+                onPress={() => setSelectedUser(member.id)}
+                title={member.displayName}
+              />
+            ))}
+          </Menu>
+        </View>
+
+        <View style={styles.modalSection}>
+          <Text style={styles.modalLabel}>Groupe</Text>
+          <Menu
+            visible={false}
+            onDismiss={() => {}}
+            anchor={
+              <TouchableOpacity style={styles.modalButton}>
+                <Text style={styles.modalButtonText}>
+                  {selectedGroup ? projectGroups.find(g => g.id === selectedGroup)?.name : 'Sélectionner un groupe'}
+                </Text>
+                <Text style={styles.modalArrow}>▼</Text>
+              </TouchableOpacity>
+            }
+          >
+            {projectGroups.map((group) => (
+              <Menu.Item
+                key={group.id}
+                onPress={() => setSelectedGroup(group.id)}
+                title={group.name}
+              />
+            ))}
+          </Menu>
+        </View>
+      </GenericModal>
     </View>
   );
 };

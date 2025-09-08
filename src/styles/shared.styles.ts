@@ -180,12 +180,47 @@ export const sharedStyles = StyleSheet.create({
     lineHeight: 24,
   },
   
+  // Buttons
+  button: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  
   // Animations
   fadeIn: {
     opacity: 1,
   },
   slideUp: {
     transform: [{ translateY: 0 }],
+  },
+  
+  // Empty states
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 

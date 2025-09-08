@@ -157,16 +157,24 @@ export const styles = StyleSheet.create({
     bottom: 20,
     right: 20,
     flexDirection: 'row',
-    gap: 8,
-    alignItems: 'flex-end',
+    gap: 12,
+    alignItems: 'center',
   },
   fab: {
-    position: 'relative',
-    margin: 0,
-    minWidth: 80,
+    backgroundColor: colors.primary,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   groupFab: {
-    backgroundColor: colors.sageGreen,
+    backgroundColor: colors.success,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   modalHeader: {
     alignItems: 'center',
@@ -263,5 +271,49 @@ export const styles = StyleSheet.create({
   archivedText: {
     color: colors.textSecondary,
     fontStyle: 'italic',
+  },
+  projectInfo: {
+    flex: 1,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  emptyDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  projectsList: {
+    padding: 20,
+  },
+  
+  // Group badges
+  groupsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  groupBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  groupBadgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

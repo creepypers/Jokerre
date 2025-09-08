@@ -87,6 +87,7 @@ interface ProjectContextType {
   // Assignment logic
   assignTicketToUser: (ticketId: string, userId: string) => Promise<void>;
   assignTicketToGroup: (ticketId: string, groupId: string) => Promise<void>;
+  assignGroupToProject: (projectId: string, groupId: string) => Promise<void>;
   autoAssignTickets: (projectId: string) => Promise<void>;
 }
 
@@ -137,12 +138,24 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updatedAt: doc.data().updatedAt?.toDate() || new Date(),
       })) as Ticket[];
       setTickets(ticketsData);
+    });
+
+    // Écouter les changements de groupes d'équipe
+    const teamGroupsQuery = query(collection(db, 'teamGroups'));
+    const unsubscribeTeamGroups = onSnapshot(teamGroupsQuery, (snapshot) => {
+      const teamGroupsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate() || new Date(),
+      })) as TeamGroup[];
+      setTeamGroups(teamGroupsData);
       setLoading(false);
     });
 
     return () => {
       unsubscribeProjects();
       unsubscribeTickets();
+      unsubscribeTeamGroups();
     };
   }, [user]);
 
@@ -358,6 +371,21 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
+  const assignGroupToProject = async (projectId: string, groupId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) throw new Error('Project not found');
+
+    const updatedTeamGroups = [...project.teamGroups];
+    if (!updatedTeamGroups.includes(groupId)) {
+      updatedTeamGroups.push(groupId);
+    }
+
+    await updateDoc(doc(db, 'projects', projectId), {
+      teamGroups: updatedTeamGroups,
+      updatedAt: new Date(),
+    });
+  };
+
   const autoAssignTickets = async (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
     if (!project) throw new Error('Project not found');
@@ -414,6 +442,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Assignment logic
     assignTicketToUser,
     assignTicketToGroup,
+    assignGroupToProject,
     autoAssignTickets,
   };
 

@@ -4,63 +4,60 @@ import { colors } from '../utils/colors';
 const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 24,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  projectInfo: {
-    flex: 1,
-  },
-  projectTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: 'white',
-    marginBottom: 4,
-  },
-  projectDescription: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: '400',
-  },
-  backButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  backButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   content: {
     flex: 1,
     padding: 20,
   },
   
-  
-  // Members styles
-  membersContainer: {
+  // Statistiques
+  statsContainer: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  statContent: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  statIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  statNumber: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+
+  // Onglets
+  tabsContainer: {
+    marginBottom: 24,
+  },
+  segmentedButtons: {
+    backgroundColor: colors.background,
+    borderWidth: 0,
+  },
+  tabContent: {
     flex: 1,
   },
+
+  // En-têtes de section
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -68,30 +65,60 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: colors.textPrimary,
   },
+
+  // Boutons d'action
   inviteButton: {
-    borderColor: colors.primary,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  inviteButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
   createGroupButton: {
-    borderColor: colors.primary,
-  },
-  memberCard: {
-    marginBottom: 12,
-    backgroundColor: 'white',
+    backgroundColor: colors.success,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 8,
-    elevation: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  createGroupButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // Cartes des membres
+  memberCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginBottom: 12,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowRadius: 4,
   },
-  memberContent: {
+  memberHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    justifyContent: 'space-between',
   },
   memberInfo: {
     flexDirection: 'row',
@@ -99,21 +126,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   memberAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  adminAvatar: {
-    backgroundColor: colors.sageGreen,
-  },
-  memberAvatarText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    marginRight: 16,
   },
   memberDetails: {
     flex: 1,
@@ -122,102 +135,227 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   memberEmail: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  memberBadges: {
+  memberGroups: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 6,
   },
-  adminBadge: {
-    fontSize: 12,
-    color: colors.sageGreen,
-    fontWeight: '600',
-    backgroundColor: colors.background,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+  groupChip: {
+    height: 24,
   },
-  currentUserBadge: {
+  groupChipText: {
+    color: 'white',
     fontSize: 12,
-    color: colors.primary,
     fontWeight: '600',
-    backgroundColor: colors.background,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
   },
-  removeButton: {
+  memberActions: {
+    alignItems: 'flex-end',
+  },
+  roleBadge: {
+    backgroundColor: colors.info,
+    marginBottom: 8,
+  },
+
+  // Cartes des groupes
+  groupCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  groupInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  groupColorIndicator: {
+    width: 4,
+    height: 48,
+    borderRadius: 2,
+    marginRight: 16,
+  },
+  groupDetails: {
+    flex: 1,
+  },
+  groupName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  groupDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  groupStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  groupMemberCount: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  groupActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  expandButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  expandIcon: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+
+  // Contenu étendu des groupes
+  expandedContent: {
+    marginTop: 16,
+  },
+  divider: {
+    marginBottom: 16,
+    backgroundColor: colors.border,
+  },
+  membersSection: {
+    // Styles pour la section des membres dans les groupes
+  },
+  membersHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  membersTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  addMemberButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  addMemberButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  membersList: {
+    // Styles pour la liste des membres
+  },
+  groupMemberItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    marginBottom: 6,
+  },
+  groupMemberInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  groupMemberAvatar: {
+    marginRight: 12,
+  },
+  groupMemberDetails: {
+    flex: 1,
+  },
+  groupMemberName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  groupMemberEmail: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  removeMemberButton: {
     width: 24,
     height: 24,
     borderRadius: 12,
     backgroundColor: colors.error,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  removeButtonText: {
+  removeMemberButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
-  
-  
-  // Empty state
+
+  // États vides
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
   },
   emptyIcon: {
-    fontSize: 64,
-    marginBottom: 20,
+    fontSize: 48,
+    marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.textPrimary,
     marginBottom: 8,
   },
   emptyDescription: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
-    paddingHorizontal: 20,
+    lineHeight: 20,
   },
-  createFirstGroupButton: {
-    backgroundColor: colors.primary,
-  },
-  
-  
-  // Admin actions
-  adminActions: {
-    marginTop: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  autoAssignButton: {
-    backgroundColor: colors.sageGreen,
-  },
-  
-  // Modal styles
-  modalHeader: {
+
+  // États vides pour les groupes
+  noMembersContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    paddingVertical: 20,
   },
-  modalIcon: {
+  noMembersIcon: {
     fontSize: 32,
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  colorPicker: {
+  noMembersText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  noMembersSubtext: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+
+  // Modals
+  colorContainer: {
     marginBottom: 16,
   },
-  colorPickerLabel: {
+  colorLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.textPrimary,
@@ -225,17 +363,50 @@ export const styles = StyleSheet.create({
   },
   colorOptions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   colorOption: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   selectedColorOption: {
     borderColor: colors.primary,
     borderWidth: 3,
+  },
+
+  // Sections de modal
+  modalSection: {
+    marginBottom: 16,
+  },
+  modalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  modalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    backgroundColor: 'white',
+  },
+  modalButtonText: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  modalArrow: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginLeft: 8,
   },
 });

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Animated, TouchableOpacity, Text, Alert, Dimensions } from 'react-native';
-import { Title, FAB, Portal, Modal, TextInput, Button, ActivityIndicator, Card, IconButton } from 'react-native-paper';
+import { View, ScrollView, TouchableOpacity, Text, Alert, Dimensions } from 'react-native';
+import { Title, FAB, TextInput, Card, IconButton, Menu, Button } from 'react-native-paper';
 import { useProject, TeamGroup } from '../context/ProjectContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../utils/colors';
 import { sharedStyles } from '../styles/shared.styles';
 import { styles } from '../styles/GroupsDashboardScreen.styles';
+import { Header, GenericModal, AnimatedView, BackButton, ContextMenu } from '../components';
 
 interface GroupsDashboardScreenProps {
   navigation: any;
@@ -14,12 +15,12 @@ interface GroupsDashboardScreenProps {
 const { width } = Dimensions.get('window');
 
 export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ navigation }) => {
-  const { teamGroups, projects, projectUsers, createTeamGroup, updateTeamGroup, deleteTeamGroup, assignTicketToGroup, addUserToGroup, getTicketsByProject } = useProject();
+  const { teamGroups, projects, projectUsers, createTeamGroup, updateTeamGroup, deleteTeamGroup, addUserToGroup, getTicketsByProject, assignGroupToProject } = useProject();
   const { user } = useAuth();
   
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [showAssignProjectModal, setShowAssignProjectModal] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [groupColor, setGroupColor] = useState('#3B82F6');
@@ -27,43 +28,34 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [memberEmail, setMemberEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [slideAnim] = useState(new Animated.Value(50));
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [showMenu, setShowMenu] = useState<string | null>(null);
+  const [showGroupDropdown, setShowGroupDropdown] = useState(false);
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+
+  const colorOptions = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
   const userProjects = projects.filter(p => p.createdBy === user?.uid);
+  const userGroups = teamGroups.filter(g => g.members.includes(user?.uid || ''));
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+  React.useEffect(() => {
+    // Animation handled by AnimatedView component
   }, []);
 
   const handleCreateGroup = async () => {
-    if (!groupName.trim()) return;
-    
+    if (!groupName.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir un nom de groupe');
+      return;
+    }
+
     setLoading(true);
     try {
-      await createTeamGroup(
-        '', // projectId - Groupe global (empty string)
-        groupName.trim(),
-        groupDescription.trim(),
-        groupColor
-      );
+      await createTeamGroup('', groupName.trim(), groupDescription.trim(), groupColor);
       setGroupName('');
       setGroupDescription('');
       setGroupColor('#3B82F6');
       setShowCreateModal(false);
-      Alert.alert('Succès', 'Groupe créé avec succès');
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Erreur', 'Impossible de créer le groupe');
     } finally {
       setLoading(false);
@@ -72,7 +64,7 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
 
   const handleDeleteGroup = async (groupId: string) => {
     Alert.alert(
-      'Confirmer',
+      'Confirmer la suppression',
       'Êtes-vous sûr de vouloir supprimer ce groupe ?',
       [
         { text: 'Annuler', style: 'cancel' },
@@ -92,101 +84,210 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
     );
   };
 
-  const handleAssignProject = async () => {
-    if (!selectedGroup || !selectedProject) return;
-    
-    setLoading(true);
-    try {
-      const projectTickets = getTicketsByProject(selectedProject);
-      
-      for (const ticket of projectTickets) {
-        await assignTicketToGroup(ticket.id, selectedGroup);
-      }
-      
-      setSelectedGroup('');
-      setSelectedProject('');
-      setShowAssignModal(false);
-      Alert.alert('Succès', 'Projet assigné au groupe avec succès');
-    } catch (error) {
-      Alert.alert('Erreur', 'Impossible d\'assigner le projet au groupe');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddMember = async () => {
-    if (!memberEmail.trim() || !selectedGroup) return;
-    
+    if (!memberEmail.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir une adresse email');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Trouver l'utilisateur par email
-      const userToAdd = projectUsers.find(u => u.email === memberEmail.trim());
-      if (!userToAdd) {
-        Alert.alert('Erreur', 'Utilisateur non trouvé avec cet email');
-        return;
+      const user = projectUsers.find(u => u.email === memberEmail.trim());
+      if (user) {
+        await addUserToGroup(selectedGroup, user.id);
+        Alert.alert('Succès', 'Membre ajouté au groupe avec succès');
+      } else {
+        Alert.alert('Erreur', 'Utilisateur non trouvé');
       }
-
-      await addUserToGroup(selectedGroup, userToAdd.id);
       setMemberEmail('');
       setSelectedGroup('');
       setShowAddMemberModal(false);
-      Alert.alert('Succès', 'Membre ajouté au groupe avec succès');
-    } catch (error) {
-      Alert.alert('Erreur', 'Impossible d\'ajouter le membre au groupe');
+    } catch (error: any) {
+      Alert.alert('Erreur', 'Impossible d\'ajouter le membre');
     } finally {
       setLoading(false);
     }
   };
 
-  const getGroupMembers = (group: TeamGroup) => {
-    return projectUsers.filter(user => group.members.includes(user.id));
+  const handleAssignProject = async () => {
+    if (!selectedGroup || !selectedProject) {
+      Alert.alert('Erreur', 'Veuillez sélectionner un groupe et un projet');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await assignGroupToProject(selectedProject, selectedGroup);
+      Alert.alert('Succès', 'Groupe assigné au projet avec succès');
+      setSelectedGroup('');
+      setSelectedProject('');
+      setShowAssignProjectModal(false);
+    } catch (error: any) {
+      Alert.alert('Erreur', 'Impossible d\'assigner le groupe au projet');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getAssignedProjects = (group: TeamGroup) => {
-    return projects.filter(project => project.teamGroups?.includes(group.id));
+  const toggleGroupExpansion = (groupId: string) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(groupId)) {
+      newExpanded.delete(groupId);
+    } else {
+      newExpanded.add(groupId);
+    }
+    setExpandedGroups(newExpanded);
   };
+
+  const renderGroup = (group: TeamGroup) => {
+    const isExpanded = expandedGroups.has(group.id);
+    const groupProjects = userProjects.filter(p => p.teamGroups.includes(group.id));
+    const groupMembers = projectUsers.filter(u => group.members.includes(u.id));
+    const groupTickets = groupProjects.flatMap(p => getTicketsByProject(p.id));
+
+    return (
+      <AnimatedView key={group.id} animationType="both">
+        <Card style={styles.groupCard}>
+          <Card.Content>
+            <View style={styles.groupHeader}>
+              <View style={styles.groupInfo}>
+                <View style={[styles.groupColorIndicator, { backgroundColor: group.color }]} />
+                <View style={styles.groupDetails}>
+                  <Title style={styles.groupName}>{group.name}</Title>
+                  <Text style={styles.groupDescription}>{group.description}</Text>
+                </View>
+              </View>
+              <View style={styles.groupActions}>
+                <ContextMenu
+                  visible={showMenu === group.id}
+                  onDismiss={() => setShowMenu(null)}
+                  onOpen={() => setShowMenu(group.id)}
+                  items={[
+                    {
+                      title: 'Supprimer',
+                      icon: 'delete',
+                      onPress: () => handleDeleteGroup(group.id),
+                      titleStyle: { color: colors.error },
+                    },
+                  ]}
+                />
+                <TouchableOpacity
+                  onPress={() => toggleGroupExpansion(group.id)}
+                  style={styles.expandButton}
+                >
+                  <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {isExpanded && (
+              <View style={styles.expandedContent}>
+                <View style={styles.groupStats}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statItemNumber}>{groupProjects.length}</Text>
+                    <Text style={styles.statItemLabel}>Projets</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statItemNumber}>{groupMembers.length}</Text>
+                    <Text style={styles.statItemLabel}>Membres</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statItemNumber}>{groupTickets.length}</Text>
+                    <Text style={styles.statItemLabel}>Tickets</Text>
+                  </View>
+                </View>
+
+                <View style={styles.membersSection}>
+                  <View style={styles.membersHeader}>
+                    <Text style={styles.membersTitle}>Membres ({groupMembers.length})</Text>
+                    <TouchableOpacity
+                      style={[styles.addMemberToGroupButton, sharedStyles.button]}
+                      onPress={() => {
+                        setSelectedGroup(group.id);
+                        setShowAddMemberModal(true);
+                      }}
+                    >
+                      <Text style={sharedStyles.buttonText}>Ajouter</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.membersList}>
+                    {groupMembers.map((member) => (
+                      <View key={member.id} style={styles.memberItem}>
+                        <View style={styles.memberInfo}>
+                          <View style={styles.memberAvatar}>
+                            <Text style={styles.memberAvatarText}>
+                              {member.displayName.charAt(0).toUpperCase()}
+                            </Text>
+                          </View>
+                          <Text style={styles.memberName}>{member.displayName}</Text>
+                          <Text style={styles.memberEmail}>{member.email}</Text>
+                        </View>
+                      </View>
+                    ))}
+                    {groupMembers.length === 0 && (
+                      <Text style={styles.noMembersText}>Aucun membre dans ce groupe</Text>
+                    )}
+                  </View>
+                </View>
+
+                <View style={styles.projectsSection}>
+                  <Text style={styles.projectsTitle}>Projets associés ({groupProjects.length})</Text>
+                  <View style={styles.projectsList}>
+                    {groupProjects.map((project) => (
+                      <Text key={project.id} style={styles.projectItem}>• {project.name}</Text>
+                    ))}
+                    {groupProjects.length === 0 && (
+                      <Text style={styles.noMembersText}>Aucun projet associé</Text>
+                    )}
+                  </View>
+                </View>
+              </View>
+            )}
+          </Card.Content>
+        </Card>
+      </AnimatedView>
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={sharedStyles.container}>
+        <Header 
+          title="Gestion des Groupes" 
+          subtitle="Organisez vos équipes et projets"
+          showBackButton
+          onBackPress={() => navigation.goBack()}
+        />
+        <View style={sharedStyles.loadingContainer}>
+          <Text style={{ fontSize: 16, color: colors.textSecondary }}>Chargement...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Animated.View 
-        style={[
-          styles.header,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }]
-          }
-        ]}
-      >
-        <View style={styles.headerContent}>
-          <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Gestion des Groupes</Text>
-            <Text style={styles.headerSubtitle}>Organisez vos équipes et projets</Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.backButtonText}>← Retour</Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
+    <View style={sharedStyles.container}>
+      <Header 
+        title="Gestion des Groupes" 
+        subtitle="Organisez vos équipes et projets"
+        rightElement={
+          <BackButton onPress={() => navigation.goBack()} />
+        }
+      />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content}>
         <View style={styles.statsContainer}>
           <Card style={styles.statCard}>
             <Card.Content style={styles.statContent}>
-              <Text style={styles.statNumber}>{teamGroups.length}</Text>
-              <Text style={styles.statLabel}>Groupes créés</Text>
+              <Text style={styles.statNumber}>{userGroups.length}</Text>
+              <Text style={styles.statLabel}>Mes Groupes</Text>
             </Card.Content>
           </Card>
-          
           <Card style={styles.statCard}>
             <Card.Content style={styles.statContent}>
-              <Text style={styles.statNumber}>
-                {teamGroups.reduce((total, group) => total + group.members.length, 0)}
-              </Text>
-              <Text style={styles.statLabel}>Membres total</Text>
+              <Text style={styles.statNumber}>{userProjects.length}</Text>
+              <Text style={styles.statLabel}>Projets</Text>
             </Card.Content>
           </Card>
         </View>
@@ -194,328 +295,200 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
 
         <View style={styles.groupsContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Groupes disponibles</Text>
-            <Button
-              mode="outlined"
-              onPress={() => setShowAssignModal(true)}
-              style={styles.assignButton}
-              icon="link"
-              compact
-            >
-              Assigner un projet
-            </Button>
+            <Title style={styles.sectionTitle}>Mes Groupes ({userGroups.length})</Title>
           </View>
-
-           {teamGroups.map((group) => {
-             const members = getGroupMembers(group);
-             const assignedProjects = getAssignedProjects(group);
-             
-             return (
-               <Card key={group.id} style={styles.groupCard}>
-                 <Card.Content style={styles.groupContent}>
-                   <TouchableOpacity 
-                     style={styles.groupHeader}
-                     onPress={() => navigation.navigate('GroupMembers', { group })}
-                     activeOpacity={0.7}
-                   >
-                     <View style={styles.groupInfo}>
-                       <View style={[styles.groupColorIndicator, { backgroundColor: group.color }]} />
-                       <View style={styles.groupDetails}>
-                         <Text style={styles.groupName}>{group.name}</Text>
-                         <Text style={styles.groupDescription}>{group.description}</Text>
-                       </View>
-                     </View>
-                     <View style={styles.groupActions}>
-                       <TouchableOpacity
-                         onPress={() => handleDeleteGroup(group.id)}
-                         style={styles.deleteButton}
-                       >
-                         <Text style={styles.deleteButtonText}>×</Text>
-                       </TouchableOpacity>
-                       <Text style={styles.expandIcon}>→</Text>
-                     </View>
-                   </TouchableOpacity>
-
-                  <View style={styles.groupStats}>
-                    <View style={styles.statItem}>
-                      <Text style={styles.statItemNumber}>{members.length}</Text>
-                      <Text style={styles.statItemLabel}>Membres</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                      <Text style={styles.statItemNumber}>{assignedProjects.length}</Text>
-                      <Text style={styles.statItemLabel}>Projets</Text>
-                    </View>
-                  </View>
-
-                   {assignedProjects.length > 0 && (
-                     <View style={styles.projectsSection}>
-                       <Text style={styles.projectsTitle}>Projets assignés :</Text>
-                       <View style={styles.projectsList}>
-                         {assignedProjects.map((project) => (
-                           <Text key={project.id} style={styles.projectItem}>
-                             • {project.name}
-                           </Text>
-                         ))}
-                       </View>
-                     </View>
-                   )}
-                </Card.Content>
-              </Card>
-            );
-          })}
-
-          {teamGroups.length === 0 && (
-            <View style={styles.emptyState}>
+          
+          {userGroups.length === 0 ? (
+            <AnimatedView 
+              style={styles.emptyState}
+              animationType="fade"
+            >
               <Text style={styles.emptyIcon}>👥</Text>
-              <Text style={styles.emptyTitle}>Aucun groupe créé</Text>
+              <Text style={styles.emptyTitle}>Aucun groupe</Text>
               <Text style={styles.emptyDescription}>
-                Créez votre premier groupe pour organiser vos équipes
+                Créez votre premier groupe pour organiser votre équipe et vos projets.
               </Text>
-            </View>
+            </AnimatedView>
+          ) : (
+            userGroups.map(renderGroup)
           )}
         </View>
       </ScrollView>
 
-      <FAB
-        style={styles.fab}
-        icon="plus"
-        onPress={() => setShowCreateModal(true)}
-        color="white"
-      />
+      <View style={styles.fabContainer}>
+        <FAB
+          icon="link"
+          style={[styles.fab, styles.assignFab]}
+          onPress={() => setShowAssignProjectModal(true)}
+          label="Assigner"
+          color="white"
+        />
+        <FAB
+          icon="plus"
+          style={styles.fab}
+          onPress={() => setShowCreateModal(true)}
+          label="Nouveau groupe"
+          color="white"
+        />
+      </View>
 
-      {/* Modal de création de groupe */}
-      <Portal>
-        <Modal
-          visible={showCreateModal}
-          onDismiss={() => setShowCreateModal(false)}
-          contentContainerStyle={sharedStyles.modalContent}
-        >
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalIcon}>👥</Text>
-            <Text style={sharedStyles.modalTitle}>Créer un groupe</Text>
+      <GenericModal
+        visible={showCreateModal}
+        onDismiss={() => setShowCreateModal(false)}
+        title="Nouveau Groupe"
+        icon="👥"
+        primaryButtonText="Créer"
+        onPrimaryPress={handleCreateGroup}
+        loading={loading}
+        disabled={!groupName.trim()}
+        primaryIcon="plus"
+      >
+        <TextInput
+          label="Nom du groupe"
+          value={groupName}
+          onChangeText={setGroupName}
+          mode="outlined"
+          style={sharedStyles.input}
+          outlineColor={colors.border}
+          activeOutlineColor={colors.primary}
+          left={<TextInput.Icon icon="account-group" />}
+        />
+        
+        <TextInput
+          label="Description (optionnel)"
+          value={groupDescription}
+          onChangeText={setGroupDescription}
+          mode="outlined"
+          style={sharedStyles.input}
+          multiline
+          numberOfLines={3}
+          outlineColor={colors.border}
+          activeOutlineColor={colors.primary}
+          left={<TextInput.Icon icon="text" />}
+        />
+        
+        <View style={styles.colorPicker}>
+          <Text style={styles.colorPickerLabel}>Couleur du groupe</Text>
+          <View style={styles.colorOptions}>
+            {colorOptions.map((color) => (
+              <TouchableOpacity
+                key={color}
+                style={[
+                  styles.colorOption,
+                  { backgroundColor: color },
+                  groupColor === color && styles.selectedColorOption
+                ]}
+                onPress={() => setGroupColor(color)}
+              />
+            ))}
           </View>
-          
-          <TextInput
-            label="Nom du groupe"
-            value={groupName}
-            onChangeText={setGroupName}
-            mode="outlined"
-            style={sharedStyles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
-            left={<TextInput.Icon icon="account-group" />}
-          />
-          
-          <TextInput
-            label="Description (optionnel)"
-            value={groupDescription}
-            onChangeText={setGroupDescription}
-            mode="outlined"
-            style={sharedStyles.input}
-            multiline
-            numberOfLines={3}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
-            left={<TextInput.Icon icon="text" />}
-          />
-          
-          <View style={styles.colorPicker}>
-            <Text style={styles.colorPickerLabel}>Couleur du groupe</Text>
-            <View style={styles.colorOptions}>
-              {['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'].map((color) => (
-                <TouchableOpacity
-                  key={color}
-                  style={[
-                    styles.colorOption,
-                    { backgroundColor: color },
-                    groupColor === color && styles.selectedColorOption
-                  ]}
-                  onPress={() => setGroupColor(color)}
-                />
-              ))}
-            </View>
-          </View>
-          
-          <View style={sharedStyles.modalButtons}>
-            <Button
-              mode="outlined"
-              onPress={() => setShowCreateModal(false)}
-              style={[sharedStyles.modalButton, sharedStyles.secondaryButton]}
-              labelStyle={sharedStyles.secondaryButtonText}
-              icon="close"
-            >
-              Annuler
-            </Button>
-            <Button
-              mode="contained"
-              onPress={handleCreateGroup}
-              style={[sharedStyles.modalButton, sharedStyles.primaryButton]}
-              labelStyle={sharedStyles.primaryButtonText}
-              icon="check"
-              disabled={loading || !groupName.trim()}
-            >
-              {loading ? <ActivityIndicator color="white" size="small" /> : 'Créer'}
-            </Button>
-          </View>
-        </Modal>
-      </Portal>
+        </View>
+      </GenericModal>
 
-      {/* Modal d'assignation de projet */}
-      <Portal>
-        <Modal
-          visible={showAssignModal}
-          onDismiss={() => setShowAssignModal(false)}
-          contentContainerStyle={sharedStyles.modalContent}
-        >
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalIcon}>🔗</Text>
-            <Text style={sharedStyles.modalTitle}>Assigner un projet à un groupe</Text>
-          </View>
-          
-          <Text style={styles.assignDescription}>
-            Sélectionnez un projet et un groupe pour assigner tous les tickets du projet au groupe.
-          </Text>
-          
-          <View style={styles.selectorContainer}>
-            <Text style={styles.selectorLabel}>Projet :</Text>
+
+      <GenericModal
+        visible={showAddMemberModal}
+        onDismiss={() => setShowAddMemberModal(false)}
+        title="Ajouter un Membre"
+        icon="👤"
+        primaryButtonText="Ajouter"
+        onPrimaryPress={handleAddMember}
+        loading={loading}
+        disabled={!memberEmail.trim()}
+        primaryIcon="plus"
+      >
+        <TextInput
+          label="Email du membre"
+          value={memberEmail}
+          onChangeText={setMemberEmail}
+          mode="outlined"
+          style={sharedStyles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          outlineColor={colors.border}
+          activeOutlineColor={colors.primary}
+          left={<TextInput.Icon icon="email" />}
+        />
+      </GenericModal>
+
+      <GenericModal
+        visible={showAssignProjectModal}
+        onDismiss={() => setShowAssignProjectModal(false)}
+        title="Assigner un projet"
+        icon="🔗"
+        primaryButtonText="Assigner"
+        onPrimaryPress={handleAssignProject}
+        onSecondaryPress={() => setShowAssignProjectModal(false)}
+        loading={loading}
+        disabled={!selectedGroup || !selectedProject}
+        primaryIcon="link"
+      >
+        <View style={styles.selectorContainer}>
+          <Text style={styles.selectorLabel}>Sélectionner un groupe</Text>
+          <Menu
+            visible={showGroupDropdown}
+            onDismiss={() => setShowGroupDropdown(false)}
+            anchor={
+              <Button
+                mode="outlined"
+                onPress={() => setShowGroupDropdown(true)}
+                style={styles.dropdownButton}
+                contentStyle={styles.dropdownContent}
+                labelStyle={styles.dropdownLabel}
+              >
+                {selectedGroup ? userGroups.find(g => g.id === selectedGroup)?.name || 'Sélectionner un groupe' : 'Sélectionner un groupe'}
+              </Button>
+            }
+          >
+            {userGroups.map((group) => (
+              <Menu.Item
+                key={group.id}
+                onPress={() => {
+                  setSelectedGroup(group.id);
+                  setShowGroupDropdown(false);
+                }}
+                title={group.name}
+                leadingIcon={() => (
+                  <View style={[styles.groupColorDot, { backgroundColor: group.color }]} />
+                )}
+              />
+            ))}
+          </Menu>
+        </View>
+
+        <View style={styles.selectorContainer}>
+          <Text style={styles.selectorLabel}>Sélectionner un projet</Text>
+          <Menu
+            visible={showProjectDropdown}
+            onDismiss={() => setShowProjectDropdown(false)}
+            anchor={
+              <Button
+                mode="outlined"
+                onPress={() => setShowProjectDropdown(true)}
+                style={styles.dropdownButton}
+                contentStyle={styles.dropdownContent}
+                labelStyle={styles.dropdownLabel}
+              >
+                {selectedProject ? userProjects.find(p => p.id === selectedProject)?.name || 'Sélectionner un projet' : 'Sélectionner un projet'}
+              </Button>
+            }
+          >
             {userProjects.map((project) => (
-              <TouchableOpacity
+              <Menu.Item
                 key={project.id}
-                style={[
-                  styles.optionItem,
-                  selectedProject === project.id && styles.selectedOption
-                ]}
-                onPress={() => setSelectedProject(project.id)}
-              >
-                <Text style={styles.optionName}>{project.name}</Text>
-                <Text style={styles.optionDescription}>{project.description}</Text>
-              </TouchableOpacity>
+                onPress={() => {
+                  setSelectedProject(project.id);
+                  setShowProjectDropdown(false);
+                }}
+                title={project.name}
+                leadingIcon={() => (
+                  <Text style={styles.projectIcon}>📋</Text>
+                )}
+              />
             ))}
-          </View>
-          
-          <View style={styles.selectorContainer}>
-            <Text style={styles.selectorLabel}>Groupe :</Text>
-            {teamGroups.map((group) => (
-              <TouchableOpacity
-                key={group.id}
-                style={[
-                  styles.optionItem,
-                  selectedGroup === group.id && styles.selectedOption
-                ]}
-                onPress={() => setSelectedGroup(group.id)}
-              >
-                <View style={styles.groupOptionContent}>
-                  <View style={[styles.groupColorDot, { backgroundColor: group.color }]} />
-                  <View style={styles.groupOptionInfo}>
-                    <Text style={styles.optionName}>{group.name}</Text>
-                    <Text style={styles.optionDescription}>{group.description}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-          
-          <View style={sharedStyles.modalButtons}>
-            <Button
-              mode="outlined"
-              onPress={() => setShowAssignModal(false)}
-              style={[sharedStyles.modalButton, sharedStyles.secondaryButton]}
-              labelStyle={sharedStyles.secondaryButtonText}
-              icon="close"
-            >
-              Annuler
-            </Button>
-            <Button
-              mode="contained"
-              onPress={handleAssignProject}
-              style={[sharedStyles.modalButton, sharedStyles.primaryButton]}
-              labelStyle={sharedStyles.primaryButtonText}
-              icon="check"
-              disabled={!selectedGroup || !selectedProject || loading}
-            >
-              {loading ? <ActivityIndicator color="white" size="small" /> : 'Assigner'}
-            </Button>
-          </View>
-        </Modal>
-      </Portal>
-
-      {/* Modal d'ajout de membre */}
-      <Portal>
-        <Modal
-          visible={showAddMemberModal}
-          onDismiss={() => setShowAddMemberModal(false)}
-          contentContainerStyle={sharedStyles.modalContent}
-        >
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalIcon}>👤</Text>
-            <Text style={sharedStyles.modalTitle}>Ajouter un membre au groupe</Text>
-          </View>
-          
-          <Text style={styles.addMemberDescription}>
-            Sélectionnez un groupe et saisissez l'email du membre à ajouter.
-          </Text>
-          
-          <View style={styles.selectorContainer}>
-            <Text style={styles.selectorLabel}>Groupe :</Text>
-            {teamGroups.map((group) => (
-              <TouchableOpacity
-                key={group.id}
-                style={[
-                  styles.optionItem,
-                  selectedGroup === group.id && styles.selectedOption
-                ]}
-                onPress={() => setSelectedGroup(group.id)}
-              >
-                <View style={styles.groupOptionContent}>
-                  <View style={[styles.groupColorDot, { backgroundColor: group.color }]} />
-                  <View style={styles.groupOptionInfo}>
-                    <Text style={styles.optionName}>{group.name}</Text>
-                    <Text style={styles.optionDescription}>{group.description}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-          
-          <TextInput
-            label="Email du membre"
-            value={memberEmail}
-            onChangeText={setMemberEmail}
-            mode="outlined"
-            style={sharedStyles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
-            left={<TextInput.Icon icon="email" />}
-            placeholder="exemple@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          
-          <View style={sharedStyles.modalButtons}>
-            <Button
-              mode="outlined"
-              onPress={() => setShowAddMemberModal(false)}
-              style={[sharedStyles.modalButton, sharedStyles.secondaryButton]}
-              labelStyle={sharedStyles.secondaryButtonText}
-              icon="close"
-            >
-              Annuler
-            </Button>
-            <Button
-              mode="contained"
-              onPress={handleAddMember}
-              style={[sharedStyles.modalButton, sharedStyles.primaryButton]}
-              labelStyle={sharedStyles.primaryButtonText}
-              icon="check"
-              disabled={!selectedGroup || !memberEmail.trim() || loading}
-            >
-              {loading ? <ActivityIndicator color="white" size="small" /> : 'Ajouter'}
-            </Button>
-          </View>
-        </Modal>
-      </Portal>
+          </Menu>
+        </View>
+      </GenericModal>
     </View>
   );
 };
-
-export default GroupsDashboardScreen;
