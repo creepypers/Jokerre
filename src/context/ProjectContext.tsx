@@ -71,6 +71,7 @@ interface ProjectContextType {
   updateTicket: (id: string, data: Partial<Ticket>) => Promise<void>;
   deleteTicket: (id: string) => Promise<void>;
   getTicketsByProject: (projectId: string) => Ticket[];
+  createDummyTicket: (projectId: string) => Promise<void>;
   
   // User management
   inviteUserToProject: (projectId: string, email: string) => Promise<void>;
@@ -224,6 +225,56 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const getTicketsByProject = (projectId: string) => {
     return tickets.filter(ticket => ticket.projectId === projectId);
+  };
+
+  const createDummyTicket = async (projectId: string) => {
+    const dummyTickets = [
+      {
+        title: "Améliorer l'interface utilisateur",
+        description: "Refactoriser les composants pour une meilleure expérience utilisateur et une interface plus moderne.",
+        status: "todo" as const,
+        priority: "high" as const,
+        projectId,
+        tags: ["ui", "refactoring", "amélioration"],
+      },
+      {
+        title: "Corriger le bug de navigation",
+        description: "Résoudre le problème de navigation entre les écrans qui cause des erreurs intermittentes.",
+        status: "in-progress" as const,
+        priority: "urgent" as const,
+        projectId,
+        tags: ["bug", "navigation", "critique"],
+      },
+      {
+        title: "Ajouter des tests unitaires",
+        description: "Implémenter une suite de tests pour couvrir les fonctionnalités principales de l'application.",
+        status: "done" as const,
+        priority: "medium" as const,
+        projectId,
+        tags: ["test", "qualité", "développement"],
+      },
+      {
+        title: "Optimiser les performances",
+        description: "Améliorer les performances de l'application en optimisant les requêtes et le rendu des composants.",
+        status: "todo" as const,
+        priority: "medium" as const,
+        projectId,
+        tags: ["performance", "optimisation"],
+      },
+      {
+        title: "Documenter l'API",
+        description: "Créer une documentation complète pour l'API backend et les endpoints disponibles.",
+        status: "todo" as const,
+        priority: "low" as const,
+        projectId,
+        tags: ["documentation", "api"],
+      }
+    ];
+
+    // Créer tous les tickets factices
+    for (const ticketData of dummyTickets) {
+      await createTicket(ticketData);
+    }
   };
 
   // User management functions
@@ -426,6 +477,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updateTicket,
     deleteTicket,
     getTicketsByProject,
+    createDummyTicket,
     
     // User management
     inviteUserToProject,

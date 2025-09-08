@@ -383,12 +383,29 @@ export const styles = StyleSheet.create({
     gap: 16,
     marginTop: 20,
   },
-  fab: {
+  fabContainer: {
     position: 'absolute',
-    margin: 20,
-    right: 0,
-    bottom: 0,
+    bottom: 20,
+    right: 20,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  fab: {
     backgroundColor: colors.primary,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  dummyFab: {
+    backgroundColor: colors.warning,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   
 });

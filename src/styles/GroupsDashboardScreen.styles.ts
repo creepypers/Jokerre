@@ -127,8 +127,10 @@ export const styles = StyleSheet.create({
   },
   
   // Group cards
-  groupCard: {
+  groupCardTouchable: {
     marginBottom: 16,
+  },
+  groupCard: {
     backgroundColor: 'white',
     borderRadius: 8,
     elevation: 2,

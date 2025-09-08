@@ -15,18 +15,16 @@ interface GroupsDashboardScreenProps {
 const { width } = Dimensions.get('window');
 
 export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ navigation }) => {
-  const { teamGroups, projects, projectUsers, createTeamGroup, updateTeamGroup, deleteTeamGroup, addUserToGroup, getTicketsByProject, assignGroupToProject } = useProject();
+  const { teamGroups, projects, projectUsers, createTeamGroup, updateTeamGroup, deleteTeamGroup, getTicketsByProject, assignGroupToProject } = useProject();
   const { user } = useAuth();
   
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showAssignProjectModal, setShowAssignProjectModal] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [groupColor, setGroupColor] = useState('#3B82F6');
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [selectedProject, setSelectedProject] = useState<string>('');
-  const [memberEmail, setMemberEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [showMenu, setShowMenu] = useState<string | null>(null);
@@ -85,30 +83,6 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
   };
 
 
-  const handleAddMember = async () => {
-    if (!memberEmail.trim()) {
-      Alert.alert('Erreur', 'Veuillez saisir une adresse email');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const user = projectUsers.find(u => u.email === memberEmail.trim());
-      if (user) {
-        await addUserToGroup(selectedGroup, user.id);
-        Alert.alert('Succès', 'Membre ajouté au groupe avec succès');
-      } else {
-        Alert.alert('Erreur', 'Utilisateur non trouvé');
-      }
-      setMemberEmail('');
-      setSelectedGroup('');
-      setShowAddMemberModal(false);
-    } catch (error: any) {
-      Alert.alert('Erreur', 'Impossible d\'ajouter le membre');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAssignProject = async () => {
     if (!selectedGroup || !selectedProject) {
@@ -148,89 +122,50 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
 
     return (
       <AnimatedView key={group.id} animationType="both">
-        <Card style={styles.groupCard}>
-          <Card.Content>
-            <View style={styles.groupHeader}>
-              <View style={styles.groupInfo}>
-                <View style={[styles.groupColorIndicator, { backgroundColor: group.color }]} />
-                <View style={styles.groupDetails}>
-                  <Title style={styles.groupName}>{group.name}</Title>
-                  <Text style={styles.groupDescription}>{group.description}</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('GroupMembers', { group })}
+          style={styles.groupCardTouchable}
+        >
+          <Card style={styles.groupCard}>
+            <Card.Content>
+              <View style={styles.groupHeader}>
+                <View style={styles.groupInfo}>
+                  <View style={[styles.groupColorIndicator, { backgroundColor: group.color }]} />
+                  <View style={styles.groupDetails}>
+                    <Title style={styles.groupName}>{group.name}</Title>
+                    <Text style={styles.groupDescription}>{group.description}</Text>
+                  </View>
+                </View>
+                <View style={styles.groupActions}>
+                  <ContextMenu
+                    visible={showMenu === group.id}
+                    onDismiss={() => setShowMenu(null)}
+                    onOpen={() => setShowMenu(group.id)}
+                    items={[
+                      {
+                        title: 'Gérer les membres',
+                        icon: 'account-group',
+                        onPress: () => navigation.navigate('GroupMembers', { group }),
+                      },
+                      {
+                        title: 'Supprimer',
+                        icon: 'delete',
+                        onPress: () => handleDeleteGroup(group.id),
+                        titleStyle: { color: colors.error },
+                      },
+                    ]}
+                  />
+                  <TouchableOpacity
+                    onPress={() => toggleGroupExpansion(group.id)}
+                    style={styles.expandButton}
+                  >
+                    <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.groupActions}>
-                <ContextMenu
-                  visible={showMenu === group.id}
-                  onDismiss={() => setShowMenu(null)}
-                  onOpen={() => setShowMenu(group.id)}
-                  items={[
-                    {
-                      title: 'Supprimer',
-                      icon: 'delete',
-                      onPress: () => handleDeleteGroup(group.id),
-                      titleStyle: { color: colors.error },
-                    },
-                  ]}
-                />
-                <TouchableOpacity
-                  onPress={() => toggleGroupExpansion(group.id)}
-                  style={styles.expandButton}
-                >
-                  <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
 
             {isExpanded && (
               <View style={styles.expandedContent}>
-                <View style={styles.groupStats}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statItemNumber}>{groupProjects.length}</Text>
-                    <Text style={styles.statItemLabel}>Projets</Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statItemNumber}>{groupMembers.length}</Text>
-                    <Text style={styles.statItemLabel}>Membres</Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statItemNumber}>{groupTickets.length}</Text>
-                    <Text style={styles.statItemLabel}>Tickets</Text>
-                  </View>
-                </View>
-
-                <View style={styles.membersSection}>
-                  <View style={styles.membersHeader}>
-                    <Text style={styles.membersTitle}>Membres ({groupMembers.length})</Text>
-                    <TouchableOpacity
-                      style={[styles.addMemberToGroupButton, sharedStyles.button]}
-                      onPress={() => {
-                        setSelectedGroup(group.id);
-                        setShowAddMemberModal(true);
-                      }}
-                    >
-                      <Text style={sharedStyles.buttonText}>Ajouter</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.membersList}>
-                    {groupMembers.map((member) => (
-                      <View key={member.id} style={styles.memberItem}>
-                        <View style={styles.memberInfo}>
-                          <View style={styles.memberAvatar}>
-                            <Text style={styles.memberAvatarText}>
-                              {member.displayName.charAt(0).toUpperCase()}
-                            </Text>
-                          </View>
-                          <Text style={styles.memberName}>{member.displayName}</Text>
-                          <Text style={styles.memberEmail}>{member.email}</Text>
-                        </View>
-                      </View>
-                    ))}
-                    {groupMembers.length === 0 && (
-                      <Text style={styles.noMembersText}>Aucun membre dans ce groupe</Text>
-                    )}
-                  </View>
-                </View>
-
                 <View style={styles.projectsSection}>
                   <Text style={styles.projectsTitle}>Projets associés ({groupProjects.length})</Text>
                   <View style={styles.projectsList}>
@@ -246,6 +181,7 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
             )}
           </Card.Content>
         </Card>
+        </TouchableOpacity>
       </AnimatedView>
     );
   };
@@ -386,30 +322,6 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
       </GenericModal>
 
 
-      <GenericModal
-        visible={showAddMemberModal}
-        onDismiss={() => setShowAddMemberModal(false)}
-        title="Ajouter un Membre"
-        icon="👤"
-        primaryButtonText="Ajouter"
-        onPrimaryPress={handleAddMember}
-        loading={loading}
-        disabled={!memberEmail.trim()}
-        primaryIcon="plus"
-      >
-        <TextInput
-          label="Email du membre"
-          value={memberEmail}
-          onChangeText={setMemberEmail}
-          mode="outlined"
-          style={sharedStyles.input}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          outlineColor={colors.border}
-          activeOutlineColor={colors.primary}
-          left={<TextInput.Icon icon="email" />}
-        />
-      </GenericModal>
 
       <GenericModal
         visible={showAssignProjectModal}

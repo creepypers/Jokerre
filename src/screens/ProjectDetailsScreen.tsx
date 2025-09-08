@@ -27,7 +27,7 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
   const [activeTab, setActiveTab] = useState('todo');
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   
-  const { getTicketsByProject, createTicket, updateTicket, loading: ticketsLoading, projectUsers } = useProject();
+  const { getTicketsByProject, createTicket, updateTicket, createDummyTicket, loading: ticketsLoading, projectUsers } = useProject();
 
   const tickets = getTicketsByProject(project.id);
   const todoTickets = tickets.filter(ticket => ticket.status === 'todo');
@@ -86,6 +86,30 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateDummyTickets = async () => {
+    Alert.alert(
+      'Créer des tickets factices',
+      'Voulez-vous créer des tickets de test pour ce projet ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Créer', 
+          onPress: async () => {
+            setLoading(true);
+            try {
+              await createDummyTicket(project.id);
+              Alert.alert('Succès', 'Tickets factices créés avec succès !');
+            } catch (error: any) {
+              Alert.alert('Erreur', 'Impossible de créer les tickets factices');
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleTicketMove = async (ticket: Ticket, newStatus: 'todo' | 'in-progress' | 'done') => {
@@ -328,13 +352,22 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
                 </View>
       </ScrollView>
 
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => setShowCreateModal(true)}
-        label="Nouveau ticket"
-        color="white"
-      />
+      <View style={styles.fabContainer}>
+        <FAB
+          icon="test-tube"
+          style={[styles.fab, styles.dummyFab]}
+          onPress={handleCreateDummyTickets}
+          label="Test"
+          color="white"
+        />
+        <FAB
+          icon="plus"
+          style={styles.fab}
+          onPress={() => setShowCreateModal(true)}
+          label="Nouveau ticket"
+          color="white"
+        />
+      </View>
 
       <GenericModal
           visible={showCreateModal}
