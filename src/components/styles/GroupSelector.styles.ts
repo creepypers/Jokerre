@@ -1,12 +1,12 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '../utils/colors';
+import { colors } from '../../utils/colors';
 
 export const styles = StyleSheet.create({
   groupSelector: {
     marginBottom: 16,
   },
   groupSelectorLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
     marginBottom: 8,
@@ -21,8 +21,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 12,
   },
   groupDropdownLeft: {
     flexDirection: 'row',
@@ -33,7 +32,7 @@ export const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 12,
+    marginRight: 8,
   },
   groupDropdownText: {
     fontSize: 16,
@@ -47,23 +46,12 @@ export const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   groupDropdownList: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderTopWidth: 0,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
     maxHeight: 200,
-    zIndex: 1000,
-    elevation: 5,
   },
   groupDropdownItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -77,17 +65,16 @@ export const styles = StyleSheet.create({
   groupDropdownItemText: {
     fontSize: 16,
     color: colors.textPrimary,
-    fontWeight: '500',
+    marginBottom: 2,
   },
   groupDropdownItemDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginTop: 2,
   },
   noGroupsText: {
     fontSize: 14,
     color: colors.textSecondary,
-    textAlign: 'center',
     fontStyle: 'italic',
+    textAlign: 'center',
   },
 });

@@ -360,13 +360,13 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
           label="Test"
           color="white"
         />
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          onPress={() => setShowCreateModal(true)}
-          label="Nouveau ticket"
-          color="white"
-        />
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => setShowCreateModal(true)}
+        label="Nouveau ticket"
+        color="white"
+      />
       </View>
 
       <GenericModal

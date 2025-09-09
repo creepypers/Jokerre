@@ -8,20 +8,29 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  
-  // Header
   header: {
     backgroundColor: colors.primary,
+    paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 20,
-    paddingHorizontal: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   backButton: {
-    marginRight: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   headerText: {
     flex: 1,
@@ -31,9 +40,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   groupColorIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     marginRight: 12,
   },
   headerTitle: {
@@ -43,21 +52,17 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   headerSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.8)',
   },
-  
-  // Content
   content: {
     flex: 1,
     padding: 20,
   },
-  
-  // Statistics
   statsContainer: {
     flexDirection: 'row',
+    gap: 16,
     marginBottom: 24,
-    gap: 12,
   },
   statCard: {
     flex: 1,
@@ -65,16 +70,16 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 2,
   },
   statContent: {
     alignItems: 'center',
     padding: 16,
   },
   statNumber: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: colors.primary,
     marginBottom: 4,
@@ -84,8 +89,6 @@ export const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontWeight: '500',
   },
-  
-  // Members section
   membersContainer: {
     flex: 1,
   },
@@ -101,32 +104,35 @@ export const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   addMemberButton: {
-    borderColor: colors.sageGreen,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: colors.primary,
   },
-  
-  // Members list
+  addMemberButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   membersList: {
     gap: 12,
   },
   memberCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    elevation: 2,
+    borderRadius: 8,
+    elevation: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
   memberContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 16,
   },
   memberInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    justifyContent: 'space-between',
   },
   memberAvatar: {
     width: 48,
@@ -138,9 +144,9 @@ export const styles = StyleSheet.create({
     marginRight: 12,
   },
   memberAvatarText: {
+    color: 'white',
     fontSize: 18,
     fontWeight: '600',
-    color: 'white',
   },
   memberDetails: {
     flex: 1,
@@ -149,7 +155,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   memberEmail: {
     fontSize: 14,
@@ -158,19 +164,20 @@ export const styles = StyleSheet.create({
   },
   memberRole: {
     fontSize: 12,
-    color: colors.primary,
-    fontWeight: '500',
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
+    color: colors.success,
+    fontWeight: '600',
   },
   removeButton: {
-    padding: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    backgroundColor: colors.error,
   },
-  
-  // Empty state
+  removeButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 40,
@@ -191,17 +198,13 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  
-  // FAB
   fab: {
     position: 'absolute',
-    margin: 16,
+    margin: 20,
     right: 0,
     bottom: 0,
-    backgroundColor: colors.sageGreen,
+    backgroundColor: colors.primary,
   },
-  
-  // Modal
   modalHeader: {
     alignItems: 'center',
     marginBottom: 16,

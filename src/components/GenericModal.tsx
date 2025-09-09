@@ -3,7 +3,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { Portal, Modal, Button } from 'react-native-paper';
 import { sharedStyles } from '../styles/shared.styles';
 import { colors } from '../utils/colors';
-import { styles } from './GenericModal.styles';
+import { styles } from './styles/GenericModal.styles';
 
 interface GenericModalProps {
   visible: boolean;

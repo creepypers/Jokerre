@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Menu } from 'react-native-paper';
 import { colors } from '../utils/colors';
-import { styles } from './GroupSelector.styles';
+import { styles } from './styles/GroupSelector.styles';
 
 interface TeamGroup {
   id: string;

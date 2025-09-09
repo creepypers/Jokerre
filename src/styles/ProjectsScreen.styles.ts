@@ -1,40 +1,42 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { colors } from '../utils/colors';
 
+const { width } = Dimensions.get('window');
+
 export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   header: {
     backgroundColor: colors.primary,
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 24,
-    elevation: 2,
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+   
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  toggleContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 8,
-    backgroundColor: colors.background,
+  headerText: {
+    flex: 1,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: 'white',
+    marginBottom: 4,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginTop: 4,
-    fontWeight: '400',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   logoutButton: {
     paddingHorizontal: 16,
@@ -49,34 +51,22 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  toggleButton: {
+  content: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-  },
-  toggleButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  toggleButtonText: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  toggleButtonTextActive: {
-    color: 'white',
-  },
-  listContainer: {
     padding: 20,
+  },
+  projectsList: {
     paddingBottom: 100,
   },
   projectCard: {
     marginBottom: 16,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   projectHeader: {
     flexDirection: 'row',
@@ -84,21 +74,8 @@ export const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 12,
   },
-  projectHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  projectBadge: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
+  projectInfo: {
+    flex: 1,
   },
   projectTitle: {
     fontSize: 18,
@@ -109,48 +86,28 @@ export const styles = StyleSheet.create({
   projectDescription: {
     fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  projectFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  projectStats: {
-    backgroundColor: colors.background,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  statText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  arrowText: {
-    color: colors.primary,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.textPrimary,
     marginBottom: 8,
   },
-  emptyDescription: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
+  groupsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
-  customFab: {
-    backgroundColor: colors.primary,
+  groupBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  groupBadgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  archivedText: {
+    fontSize: 12,
+    color: colors.warning,
+    fontWeight: '600',
+    fontStyle: 'italic',
   },
   fabContainer: {
     position: 'absolute',
@@ -184,136 +141,13 @@ export const styles = StyleSheet.create({
     fontSize: 32,
     marginBottom: 8,
   },
-  
-  // Group selector styles
   groupSelector: {
     marginBottom: 16,
   },
   groupSelectorLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  groupDropdown: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: 'white',
-  },
-  groupDropdownContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-  },
-  groupDropdownLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  groupDropdownText: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    marginLeft: 8,
-  },
-  placeholderText: {
-    color: colors.textSecondary,
-  },
-  dropdownArrow: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginLeft: 8,
-  },
-  groupDropdownList: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: 'white',
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    maxHeight: 200,
-  },
-  groupDropdownItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  groupDropdownItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  groupDropdownItemInfo: {
-    flex: 1,
-    marginLeft: 8,
-  },
-  groupDropdownItemText: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    fontWeight: '500',
-  },
-  groupDropdownItemDescription: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  groupColorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  noGroupsText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    paddingVertical: 8,
-  },
-  archivedText: {
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-  },
-  projectInfo: {
-    flex: 1,
-  },
-  loadingText: {
     fontSize: 16,
-    color: colors.textSecondary,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
     fontWeight: '600',
     color: colors.textPrimary,
     marginBottom: 8,
-  },
-  emptyDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  projectsList: {
-    padding: 20,
-  },
-  
-  // Group badges
-  groupsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-  },
-  groupBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  groupBadgeText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
   },
 });

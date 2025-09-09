@@ -52,8 +52,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  
-  // Stats section
   statsContainer: {
     flexDirection: 'row',
     gap: 16,
@@ -62,21 +60,21 @@ export const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: 'white',
-    borderRadius: 8,
+    borderRadius: 12,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 2,
   },
   statContent: {
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
   statNumber: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: colors.primary,
     marginBottom: 4,
   },
   statLabel: {
@@ -84,27 +82,6 @@ export const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontWeight: '500',
   },
-  
-  // Member Management section
-  memberManagementContainer: {
-    marginBottom: 24,
-    padding: 16,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  memberManagementDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 8,
-    lineHeight: 20,
-  },
-
-  // Groups section
   groupsContainer: {
     flex: 1,
   },
@@ -119,14 +96,6 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textPrimary,
   },
-  addMemberButton: {
-    borderColor: colors.sageGreen,
-  },
-  assignButton: {
-    borderColor: colors.primary,
-  },
-  
-  // Group cards
   groupCardTouchable: {
     marginBottom: 16,
   },
@@ -139,9 +108,6 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
-  groupContent: {
-    padding: 20,
-  },
   groupHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -152,6 +118,9 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  expandButton: {
+    padding: 8,
   },
   expandIcon: {
     fontSize: 18,
@@ -182,153 +151,39 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
   },
-  deleteButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.error,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   expandedContent: {
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-  
-  // Group stats
-  groupStats: {
-    flexDirection: 'row',
-    gap: 24,
-    marginBottom: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statItemNumber: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: 2,
-  },
-  statItemLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  
-  // Members section
-  membersSection: {
+  projectsSection: {
     marginBottom: 16,
   },
-  membersHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  membersTitle: {
+  projectsTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
+    marginBottom: 12,
   },
-  addMemberToGroupButton: {
-    borderColor: colors.sageGreen,
-  },
-  membersList: {
+  projectsList: {
     gap: 8,
   },
-  memberItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.background,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  memberInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  memberAvatar: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 6,
-  },
-  memberAvatarText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  memberName: {
+  projectItem: {
     fontSize: 14,
-    color: colors.textPrimary,
-    fontWeight: '500',
-  },
-  memberEmail: {
-    fontSize: 12,
     color: colors.textSecondary,
-    marginLeft: 8,
-  },
-  removeMemberButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.error,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeMemberText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
+    paddingLeft: 8,
   },
   noMembersText: {
     fontSize: 14,
     color: colors.textSecondary,
-    textAlign: 'center',
     fontStyle: 'italic',
+    textAlign: 'center',
     paddingVertical: 16,
   },
-  
-  // Projects section
-  projectsSection: {
-    marginBottom: 8,
-  },
-  projectsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  projectsList: {
-    gap: 4,
-  },
-  projectItem: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginLeft: 8,
-  },
-  
-  // Empty state
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: 40,
   },
   emptyIcon: {
     fontSize: 48,
@@ -346,8 +201,6 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  
-  // FAB
   fabContainer: {
     position: 'absolute',
     bottom: 20,
@@ -372,43 +225,18 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  
-  // Modal styles
-  modalHeader: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalIcon: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  assignDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 20,
-  },
-  addMemberDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 20,
-  },
-  
-  // Color picker
   colorPicker: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   colorPickerLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   colorOptions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   colorOption: {
@@ -421,72 +249,15 @@ export const styles = StyleSheet.create({
   selectedColorOption: {
     borderColor: colors.primary,
   },
-  
-  // Selectors
   selectorContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   selectorLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  optionItem: {
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 8,
-    backgroundColor: 'white',
-  },
-  selectedOption: {
-    borderColor: colors.primary,
-    backgroundColor: colors.background,
-  },
-  optionName: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: 12,
   },
-  optionDescription: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  groupOptionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  groupColorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  groupOptionInfo: {
-    flex: 1,
-  },
-  
-  // Missing styles
-  expandButton: {
-    padding: 8,
-  },
-  buttonContainer: {
-    marginTop: 16,
-  },
-  button: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  
-  // Dropdown styles
   dropdownButton: {
     marginBottom: 8,
     borderColor: colors.border,
@@ -497,6 +268,15 @@ export const styles = StyleSheet.create({
   dropdownLabel: {
     textAlign: 'left',
     color: colors.textPrimary,
+  },
+  groupColorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  groupOptionInfo: {
+    flex: 1,
   },
   projectIcon: {
     fontSize: 16,

@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '../utils/colors';
+import { colors } from '../../utils/colors';
 
 export const styles = StyleSheet.create({
   header: {
@@ -28,7 +28,7 @@ export const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: colors.white,
   },
   backButton: {
     paddingHorizontal: 16,

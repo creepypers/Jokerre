@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { colors } from '../utils/colors';
-import { styles } from './Header.styles';
+import { styles } from './styles/Header.styles';
 
 interface HeaderProps {
   title: string;

@@ -222,8 +222,9 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
         />
       </AnimatedView>
 
-      <ToggleButtons
-        options={[
+      <ToggleButtons style={{marginTop: 20,marginLeft: 20,marginRight: 20,marginBottom: 20}}
+        
+        options={[ 
           { value: 'active', label: 'Projets Actifs', count: activeProjects.length },
           { value: 'archived', label: 'Projets Archivés', count: archivedProjects.length },
         ]}
@@ -256,6 +257,7 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.projectsList}
           showsVerticalScrollIndicator={false}
+          style={{marginLeft: 20,marginRight: 20, marginBottom: 20}}
         />
       )}
 
