@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, Alert, Dimensions } from 'react-native';
-import { Title, FAB, TextInput, Card, IconButton, Menu, Button } from 'react-native-paper';
+import { View, ScrollView, TouchableOpacity, Text, Alert, Dimensions, SafeAreaView, FlatList } from 'react-native';
+import { Title, FAB, TextInput, Card, Icon, Menu, Button } from 'react-native-paper';
 import { useProject, TeamGroup } from '../context/ProjectContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../utils/colors';
@@ -33,7 +33,8 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
 
   const colorOptions = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
-  const userProjects = projects.filter(p => p.createdBy === user?.uid);
+  // Inclure tous les projets dont l'utilisateur est membre (créateur ou invité)
+  const userProjects = projects.filter(p => p.members.includes(user?.uid || ''));
   const userGroups = teamGroups.filter(g => g.members.includes(user?.uid || ''));
 
   React.useEffect(() => {
@@ -114,55 +115,55 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
     setExpandedGroups(newExpanded);
   };
 
-  const renderGroup = (group: TeamGroup) => {
+  const renderGroup = ({ item: group }: { item: TeamGroup }) => {
     const isExpanded = expandedGroups.has(group.id);
     const groupProjects = userProjects.filter(p => p.teamGroups.includes(group.id));
     const groupMembers = projectUsers.filter(u => group.members.includes(u.id));
     const groupTickets = groupProjects.flatMap(p => getTicketsByProject(p.id));
 
     return (
-      <AnimatedView key={group.id} animationType="both">
+      <AnimatedView animationType="both">
         <TouchableOpacity
-          onPress={() => navigation.navigate('GroupMembers', { group })}
+          onPress={() => navigation.navigate('GroupMembers', { groupId: group.id })}
           style={styles.groupCardTouchable}
         >
-          <Card style={styles.groupCard}>
-            <Card.Content>
-              <View style={styles.groupHeader}>
-                <View style={styles.groupInfo}>
-                  <View style={[styles.groupColorIndicator, { backgroundColor: group.color }]} />
-                  <View style={styles.groupDetails}>
-                    <Title style={styles.groupName}>{group.name}</Title>
-                    <Text style={styles.groupDescription}>{group.description}</Text>
-                  </View>
+        <Card style={styles.groupCard}>
+          <Card.Content>
+            <View style={styles.groupHeader}>
+              <View style={styles.groupInfo}>
+                <View style={[styles.groupColorIndicator, { backgroundColor: group.color }]} />
+                <View style={styles.groupDetails}>
+                  <Title style={styles.groupName}>{group.name}</Title>
+                  <Text style={styles.groupDescription}>{group.description}</Text>
                 </View>
-                <View style={styles.groupActions}>
-                  <ContextMenu
-                    visible={showMenu === group.id}
-                    onDismiss={() => setShowMenu(null)}
-                    onOpen={() => setShowMenu(group.id)}
-                    items={[
+              </View>
+              <View style={styles.groupActions}>
+                <ContextMenu
+                  visible={showMenu === group.id}
+                  onDismiss={() => setShowMenu(null)}
+                  onOpen={() => setShowMenu(group.id)}
+                  items={[
                       {
                         title: 'Gérer les membres',
                         icon: 'account-group',
                         onPress: () => navigation.navigate('GroupMembers', { group }),
                       },
-                      {
-                        title: 'Supprimer',
-                        icon: 'delete',
-                        onPress: () => handleDeleteGroup(group.id),
-                        titleStyle: { color: colors.error },
-                      },
-                    ]}
-                  />
-                  <TouchableOpacity
-                    onPress={() => toggleGroupExpansion(group.id)}
-                    style={styles.expandButton}
-                  >
-                    <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
-                  </TouchableOpacity>
-                </View>
+                    {
+                      title: 'Supprimer',
+                      icon: 'delete',
+                      onPress: () => handleDeleteGroup(group.id),
+                      titleStyle: { color: colors.error },
+                    },
+                  ]}
+                />
+                <TouchableOpacity
+                  onPress={() => toggleGroupExpansion(group.id)}
+                  style={styles.expandButton}
+                >
+                  <Text style={styles.expandIcon}>{isExpanded ? '▲' : '▼'}</Text>
+                </TouchableOpacity>
               </View>
+            </View>
 
             {isExpanded && (
               <View style={styles.expandedContent}>
@@ -188,7 +189,7 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
 
   if (loading) {
     return (
-      <View style={sharedStyles.container}>
+      <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
         <Header 
           title="Gestion des Groupes" 
           subtitle="Organisez vos équipes et projets"
@@ -198,12 +199,12 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
         <View style={sharedStyles.loadingContainer}>
           <Text style={{ fontSize: 16, color: colors.textSecondary }}>Chargement...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={sharedStyles.container}>
+    <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
       <Header 
         title="Gestion des Groupes" 
         subtitle="Organisez vos équipes et projets"
@@ -212,7 +213,7 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
         }
       />
 
-      <ScrollView style={styles.content}>
+      <View style={styles.content}>
         <View style={styles.statsContainer}>
           <Card style={styles.statCard}>
             <Card.Content style={styles.statContent}>
@@ -239,17 +240,30 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
               style={styles.emptyState}
               animationType="fade"
             >
-              <Text style={styles.emptyIcon}>👥</Text>
+              <View style={styles.emptyIcon}>
+                <Icon 
+                  source="account-group" 
+                  size={48} 
+                  color={colors.textSecondary}
+                />
+              </View>
               <Text style={styles.emptyTitle}>Aucun groupe</Text>
               <Text style={styles.emptyDescription}>
                 Créez votre premier groupe pour organiser votre équipe et vos projets.
               </Text>
             </AnimatedView>
           ) : (
-            userGroups.map(renderGroup)
+            <FlatList
+              data={userGroups}
+              renderItem={renderGroup}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.groupsList}
+              nestedScrollEnabled={true}
+            />
           )}
         </View>
-      </ScrollView>
+      </View>
 
       <View style={styles.fabContainer}>
         <FAB
@@ -259,20 +273,20 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
           label="Assigner"
           color="white"
         />
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          onPress={() => setShowCreateModal(true)}
-          label="Nouveau groupe"
-          color="white"
-        />
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => setShowCreateModal(true)}
+        label="Nouveau groupe"
+        color="white"
+      />
       </View>
 
       <GenericModal
         visible={showCreateModal}
         onDismiss={() => setShowCreateModal(false)}
         title="Nouveau Groupe"
-        icon="👥"
+        icon="account-group"
         primaryButtonText="Créer"
         onPrimaryPress={handleCreateGroup}
         loading={loading}
@@ -352,16 +366,16 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
               </Button>
             }
           >
-            {userGroups.map((group) => (
+          {userGroups.map((group) => (
               <Menu.Item
-                key={group.id}
+              key={group.id}
                 onPress={() => {
                   setSelectedGroup(group.id);
                   setShowGroupDropdown(false);
                 }}
                 title={group.name}
                 leadingIcon={() => (
-                  <View style={[styles.groupColorDot, { backgroundColor: group.color }]} />
+                <View style={[styles.groupColorDot, { backgroundColor: group.color }]} />
                 )}
               />
             ))}
@@ -385,9 +399,9 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
               </Button>
             }
           >
-            {userProjects.map((project) => (
+          {userProjects.map((project) => (
               <Menu.Item
-                key={project.id}
+              key={project.id}
                 onPress={() => {
                   setSelectedProject(project.id);
                   setShowProjectDropdown(false);
@@ -401,6 +415,6 @@ export const GroupsDashboardScreen: React.FC<GroupsDashboardScreenProps> = ({ na
           </Menu>
         </View>
       </GenericModal>
-    </View>
+    </SafeAreaView>
   );
 };

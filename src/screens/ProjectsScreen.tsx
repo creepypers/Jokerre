@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, FlatList, Alert, Text, TouchableOpacity } from 'react-native';
-import { FAB, Card, Title, Paragraph, TextInput } from 'react-native-paper';
+import { View, FlatList, Alert, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import { FAB, Card, Title, Paragraph, TextInput, Button, Icon } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { useProject, Project } from '../context/ProjectContext';
@@ -15,6 +15,17 @@ interface ProjectsScreenProps {
 
 export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Helper function to safely serialize project for navigation
+  const serializeProjectForNavigation = (project: Project) => {
+    return {
+      ...project,
+      createdAt: project.createdAt.toISOString(),
+      ...(project.updatedAt && project.updatedAt instanceof Date && { 
+        updatedAt: project.updatedAt.toISOString() 
+      })
+    };
+  };
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string>('');
@@ -25,9 +36,15 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   
   const { user, logout } = useAuth();
-  const { projects, teamGroups, createProject, updateProject, deleteProject, archiveProject, restoreProject, loading: projectsLoading } = useProject();
+  const { projects, teamGroups, projectUsers, getTicketsByProject, createProject, updateProject, deleteProject, archiveProject, restoreProject, loading: projectsLoading } = useProject();
 
-  const userProjects = projects.filter(p => p.createdBy === user?.uid);
+  // Debug: Afficher les informations de debug
+  console.log('ProjectsScreen - Total projects:', projects.length);
+  console.log('ProjectsScreen - User projects (members):', projects.filter(p => p.members.includes(user?.uid || '')).length);
+  console.log('ProjectsScreen - User projects (createdBy):', projects.filter(p => p.createdBy === user?.uid).length);
+
+  // Inclure tous les projets dont l'utilisateur est membre (créateur ou invité)
+  const userProjects = projects.filter(p => p.members.includes(user?.uid || ''));
   const activeProjects = userProjects.filter(p => !p.archived);
   const archivedProjects = userProjects.filter(p => p.archived);
   const displayedProjects = showArchived ? archivedProjects : activeProjects;
@@ -131,18 +148,42 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
 
   const renderProject = ({ item, index }: { item: Project; index: number }) => {
     const projectGroups = teamGroups.filter(g => item.teamGroups.includes(g.id));
+    const projectMembers = projectUsers.filter(u => item.members.includes(u.id));
+    const projectTickets = getTicketsByProject(item.id);
     
     return (
       <AnimatedView animationType="both" delay={index * 100}>
         <TouchableOpacity
-          onPress={() => navigation.navigate('ProjectDetails', { project: item })}
+          onPress={() => navigation.navigate('ProjectDetails', { 
+            project: serializeProjectForNavigation(item)
+          })}
           activeOpacity={0.7}
         >
           <Card style={styles.projectCard}>
             <Card.Content>
               <View style={styles.projectHeader}>
                 <View style={styles.projectInfo}>
-                  <Title style={styles.projectTitle}>{item.name}</Title>
+                  <View style={styles.projectTitleRow}>
+                    <Title style={styles.projectTitle}>{item.name}</Title>
+                    <View style={styles.statsRow}>
+                      <View style={styles.membersBadge}>
+                        <Icon 
+                          source="account-group" 
+                          size={16} 
+                          color={colors.primary}
+                        />
+                        <Text style={styles.membersBadgeText}>{projectMembers.length}</Text>
+                      </View>
+                      <View style={styles.ticketsBadge}>
+                        <Icon 
+                          source="ticket" 
+                          size={16} 
+                          color={colors.success}
+                        />
+                        <Text style={styles.ticketsBadgeText}>{projectTickets.length}</Text>
+                      </View>
+                    </View>
+                  </View>
                   {item.description && (
                     <Paragraph style={styles.projectDescription}>{item.description}</Paragraph>
                   )}
@@ -195,31 +236,58 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
 
   if (projectsLoading) {
     return (
-      <View style={sharedStyles.container}>
+      <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
         <Header title="Mes Projets" />
         <View style={sharedStyles.loadingContainer}>
           <Text style={{ fontSize: 16, color: colors.textSecondary }}>Chargement des projets...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={sharedStyles.container}>
+    <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
       <AnimatedView animationType="both">
         <Header
           title="Mes Projets"
           subtitle={`${displayedProjects.length} projet${displayedProjects.length > 1 ? 's' : ''} ${showArchived ? 'archivé' : 'actif'}${showArchived ? 's' : ''}`}
           rightElement={
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={handleLogout}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.logoutText}>Déconnexion</Text>
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                style={styles.invitationsButton}
+                onPress={() => navigation.navigate('Invitations')}
+                activeOpacity={0.7}
+              >
+                <Icon 
+                  source="email-outline" 
+                  size={20} 
+                  color="white"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}
+                activeOpacity={0.7}
+              >
+                <Icon 
+                  source="logout" 
+                  size={20} 
+                  color="white"
+                />
+              </TouchableOpacity>
+            </View>
           }
         />
+        <View style={styles.userInfoContainer}>
+          <View style={styles.userNameRow}>
+            <Icon 
+              source="account" 
+              size={16} 
+              color="rgba(255, 255, 255, 0.8)"
+            />
+            <Text style={styles.userName}>{user?.displayName || user?.email || 'Utilisateur'}</Text>
+          </View>
+        </View>
       </AnimatedView>
 
       <ToggleButtons style={{marginTop: 20,marginLeft: 20,marginRight: 20,marginBottom: 20}}
@@ -237,9 +305,13 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
           style={sharedStyles.emptyContainer}
           animationType="fade"
         >
-          <Text style={{ fontSize: 48, marginBottom: 16 }}>
-            {showArchived ? '📁' : '📂'}
-          </Text>
+          <View style={{ marginBottom: 16 }}>
+            <Icon 
+              source={showArchived ? 'archive' : 'folder-open'} 
+              size={48} 
+              color={colors.textSecondary}
+            />
+          </View>
           <Text style={{ fontSize: 18, fontWeight: '600', color: colors.textPrimary, marginBottom: 8 }}>
             {showArchived ? 'Aucun projet archivé' : 'Aucun projet'}
           </Text>
@@ -282,7 +354,7 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
         visible={showCreateModal}
         onDismiss={handleCancelEdit}
         title={editingProject ? 'Modifier le projet' : 'Nouveau Projet'}
-        icon={editingProject ? '✏️' : '📁'}
+        icon={editingProject ? 'pencil' : 'folder-plus'}
         primaryButtonText={editingProject ? 'Modifier' : 'Créer'}
         onPrimaryPress={handleCreateProject}
         onSecondaryPress={handleCancelEdit}
@@ -321,13 +393,13 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
             setSelectedGroup(groupId);
             setShowGroupDropdown(false);
           }}
-          groups={teamGroups}
+          groups={teamGroups.filter(g => g.members.includes(user?.uid || ''))}
           showDropdown={showGroupDropdown}
           onToggleDropdown={() => setShowGroupDropdown(!showGroupDropdown)}
           placeholder="Sélectionner un groupe"
         />
       </GenericModal>
 
-    </View>
+    </SafeAreaView>
   );
 };

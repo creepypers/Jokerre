@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, IconButton } from 'react-native-paper';
+import { Menu, Button } from 'react-native-paper';
 import { colors } from '../utils/colors';
 
 interface MenuItem {
@@ -33,11 +33,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       visible={visible}
       onDismiss={onDismiss}
       anchor={
-        <IconButton
+        <Button
+          mode="text"
           icon={icon}
-          size={iconSize}
           onPress={onOpen}
-          iconColor={iconColor}
+          textColor={iconColor}
+          style={{ minWidth: iconSize + 10, height: iconSize + 10 }}
         />
       }
     >

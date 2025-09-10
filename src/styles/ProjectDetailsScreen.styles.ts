@@ -31,6 +31,8 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   teamButtonText: {
     color: 'white',
@@ -42,7 +44,7 @@ export const styles = StyleSheet.create({
     padding: 20,
   },
   projectInfo: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   projectDescription: {
     fontSize: 16,
@@ -61,6 +63,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    marginTop: 20,
   },
   statItem: {
     alignItems: 'center',
@@ -103,7 +106,7 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   ticketsList: {
-    gap: 12,
+    paddingBottom: 20,
   },
   ticketItem: {
     backgroundColor: 'white',
@@ -114,6 +117,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
+    marginBottom: 12,
   },
   ticketTitle: {
     fontSize: 16,
@@ -131,6 +135,11 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  ticketInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   ticketAssignee: {
     fontSize: 12,
@@ -155,65 +164,30 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  ticketCard: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  ticketHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  ticketInfo: {
-    flex: 1,
-  },
-  ticketHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  editButton: {
-    padding: 4,
-  },
-  editButtonText: {
-    fontSize: 16,
-  },
-  priorityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  priorityLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginRight: 8,
-  },
+
+
   priorityBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 3,
   },
   priorityText: {
-    color: 'white',
     fontSize: 10,
     fontWeight: '600',
+  },
+  ticketHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  kebabButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  kebabButtonText: {
+    fontSize: 16,
+    color: colors.textSecondary,
   },
   assigneeContainer: {
     flexDirection: 'row',
@@ -239,14 +213,6 @@ export const styles = StyleSheet.create({
   },
   fab: {
     backgroundColor: colors.primary,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  dummyFab: {
-    backgroundColor: colors.warning,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -296,5 +262,15 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  priorityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  priorityLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginRight: 8,
   },
 });

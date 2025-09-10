@@ -55,6 +55,7 @@ export const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     gap: 16,
+    marginTop: 12,
     marginBottom: 24,
   },
   statCard: {
@@ -186,7 +187,10 @@ export const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyIcon: {
-    fontSize: 48,
+    margin: 0,
+    padding: 0,
+    width: 48,
+    height: 48,
     marginBottom: 16,
   },
   emptyTitle: {
@@ -281,5 +285,9 @@ export const styles = StyleSheet.create({
   projectIcon: {
     fontSize: 16,
     marginRight: 8,
+  },
+  groupsList: {
+    paddingBottom: 20,
+    maxHeight: 400,
   },
 });

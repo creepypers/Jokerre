@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, Alert, Dimensions, RefreshControl } from 'react-native';
-import { Title, FAB, TextInput, Card, Chip, IconButton, Avatar, Badge, SegmentedButtons, Menu, Divider } from 'react-native-paper';
+import { View, ScrollView, TouchableOpacity, Text, Alert, Dimensions, RefreshControl, SafeAreaView, FlatList } from 'react-native';
+import { Title, FAB, TextInput, Card, Chip, Icon, Avatar, Badge, SegmentedButtons, Menu, Divider } from 'react-native-paper';
 import { useProject, TeamGroup, User } from '../context/ProjectContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../utils/colors';
@@ -21,20 +21,30 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
     projects, 
     teamGroups, 
     projectUsers, 
+    tickets,
     inviteUserToProject, 
     removeUserFromProject, 
     updateUserRole,
     addUserToGroup,
     removeUserFromGroup,
+    assignTicketToUser,
+    autoAssignTickets,
+    getTicketsByProject,
     loading: projectLoading 
   } = useProject();
   const { user } = useAuth();
 
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showTicketsDropdown, setShowTicketsDropdown] = useState(false);
+  const [showTicketMenu, setShowTicketMenu] = useState(false);
+  const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [selectedUser, setSelectedUser] = useState<string>('');
+  const [selectedTicket, setSelectedTicket] = useState<string>('');
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [showMenu, setShowMenu] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -42,6 +52,7 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
   const project = projects.find(p => p.id === projectId);
   const projectMembers = projectUsers.filter(u => project?.members.includes(u.id));
   const projectGroups = teamGroups.filter(g => project?.teamGroups.includes(g.id));
+  const projectTickets = getTicketsByProject(projectId);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -134,18 +145,60 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
     );
   };
 
+  const handleAssignTicket = async () => {
+    if (!selectedTicket || !selectedAssignee) {
+      Alert.alert('Erreur', 'Veuillez sélectionner un ticket et un assigné');
+      return;
+    }
 
-  const renderUser = (user: User, index: number) => {
+    setLoading(true);
+    try {
+      await assignTicketToUser(selectedTicket, selectedAssignee);
+      Alert.alert('Succès', 'Ticket assigné avec succès');
+      setSelectedTicket('');
+      setSelectedAssignee('');
+      setShowAssignModal(false);
+    } catch (error: any) {
+      Alert.alert('Erreur', 'Impossible d\'assigner le ticket');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAutoAssignTickets = async () => {
+    setLoading(true);
+    try {
+      await autoAssignTickets(projectId);
+      Alert.alert('Succès', 'Tickets assignés automatiquement');
+    } catch (error: any) {
+      Alert.alert('Erreur', 'Impossible d\'assigner automatiquement les tickets');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTicketAssigneeName = (assigneeId?: string) => {
+    if (!assigneeId) return 'Non assigné';
+    const assignee = projectMembers.find(member => member.id === assigneeId);
+    return assignee ? (assignee.displayName || assignee.email) : 'Utilisateur inconnu';
+  };
+
+  const getUnassignedTickets = () => {
+    return projectTickets.filter(ticket => !ticket.assignee);
+  };
+
+
+  const renderUser = ({ item: user, index }: { item: User; index: number }) => {
     const userGroups = projectGroups.filter(g => g.members.includes(user.id));
     
     return (
-      <AnimatedView key={user.id} animationType="both" delay={index * 100}>
+      <AnimatedView animationType="both" delay={index * 100}>
         <Card style={styles.memberCard}>
           <Card.Content>
             <View style={styles.memberHeader}>
               <View style={styles.memberInfo}>
                 <Avatar.Text 
-                  size={48} 
+                  size={36} 
                   label={user.displayName.charAt(0).toUpperCase()} 
                   style={[styles.memberAvatar, { backgroundColor: colors.primary }]}
                 />
@@ -155,22 +208,21 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
                   {userGroups.length > 0 && (
                     <View style={styles.memberGroups}>
                       {userGroups.map(group => (
-                        <Chip 
+                        <Text 
                           key={group.id} 
                           style={[styles.groupChip, { backgroundColor: group.color }]}
-                          textStyle={styles.groupChipText}
                         >
                           {group.name}
-                        </Chip>
+                        </Text>
                       ))}
                     </View>
                   )}
                 </View>
               </View>
               <View style={styles.memberActions}>
-                <Badge style={styles.roleBadge}>
+                <Text style={styles.roleBadge}>
                   {user.id === project?.createdBy ? 'Propriétaire' : 'Membre'}
-                </Badge>
+                </Text>
                 {user.id !== project?.createdBy && (
                   <ContextMenu
                     visible={showMenu === user.id}
@@ -197,7 +249,7 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
 
   if (projectLoading) {
     return (
-      <View style={sharedStyles.container}>
+      <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
         <Header 
           title="Gestion d'Équipe" 
           subtitle={project?.name || 'Chargement...'}
@@ -206,60 +258,144 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
         <View style={sharedStyles.loadingContainer}>
           <Text style={{ fontSize: 16, color: colors.textSecondary }}>Chargement...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!project) {
     return (
-      <View style={sharedStyles.container}>
+      <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
         <Header 
           title="Gestion d'Équipe" 
           subtitle="Projet non trouvé"
           rightElement={<BackButton onPress={() => navigation.goBack()} />}
         />
-        <View style={sharedStyles.emptyContainer}>
-          <Text style={sharedStyles.emptyTitle}>Projet non trouvé</Text>
-          <Text style={sharedStyles.emptyDescription}>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>Projet non trouvé</Text>
+          <Text style={styles.emptyDescription}>
             Le projet demandé n'existe pas ou vous n'y avez pas accès.
           </Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={sharedStyles.container}>
+    <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
       <Header 
         title="Gestion d'Équipe" 
         subtitle={project.name}
         rightElement={<BackButton onPress={() => navigation.goBack()} />}
       />
 
-      <ScrollView 
-        style={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+      <View style={styles.content}>
         {/* Statistiques */}
         <View style={styles.statsContainer}>
           <Card style={styles.statCard}>
             <Card.Content style={styles.statContent}>
-              <Text style={styles.statIcon}>👥</Text>
+              <View style={styles.statIcon}>
+                <Icon 
+                  source="account-group" 
+                  size={24} 
+                  color={colors.primary}
+                />
+              </View>
               <Text style={styles.statNumber}>{projectMembers.length}</Text>
               <Text style={styles.statLabel}>Membres</Text>
             </Card.Content>
           </Card>
           <Card style={styles.statCard}>
             <Card.Content style={styles.statContent}>
-              <Text style={styles.statIcon}>🏷️</Text>
+              <View style={styles.statIcon}>
+                <Icon 
+                  source="tag" 
+                  size={24} 
+                  color={colors.primary}
+                />
+              </View>
               <Text style={styles.statNumber}>{projectGroups.length}</Text>
               <Text style={styles.statLabel}>Groupes</Text>
             </Card.Content>
           </Card>
         </View>
 
+         {/* Section des tickets */}
+         <View style={styles.ticketsSection}>
+           <View style={styles.sectionHeader}>
+             <Text style={styles.sectionTitle}>Gestion des Tickets</Text>
+             <TouchableOpacity
+               style={styles.ticketsDropdownButton}
+               onPress={() => setShowTicketsDropdown(!showTicketsDropdown)}
+             >
+               <Text style={styles.ticketsDropdownText}>
+                 {projectTickets.length} ticket{projectTickets.length > 1 ? 's' : ''}
+               </Text>
+               <View style={styles.ticketsDropdownArrow}>
+                 <Icon 
+                   source={showTicketsDropdown ? 'chevron-up' : 'chevron-down'} 
+                   size={16} 
+                   color={colors.primary}
+                 />
+               </View>
+             </TouchableOpacity>
+           </View>
+
+           {showTicketsDropdown && (
+             <View style={styles.ticketsDropdownContent}>
+               <View style={styles.ticketActions}>
+                 <TouchableOpacity
+                   style={styles.assignButton}
+                   onPress={() => setShowAssignModal(true)}
+                 >
+                   <Text style={styles.assignButtonText}>Assigner</Text>
+                 </TouchableOpacity>
+                 <TouchableOpacity
+                   style={styles.autoAssignButton}
+                   onPress={handleAutoAssignTickets}
+                 >
+                   <Text style={styles.autoAssignButtonText}>Auto-assigner</Text>
+                 </TouchableOpacity>
+               </View>
+
+               {projectTickets.length === 0 ? (
+                 <View style={styles.emptyTicketsState}>
+                   <Text style={styles.emptyTicketsText}>Aucun ticket disponible</Text>
+                 </View>
+               ) : (
+                 <FlatList
+                   data={projectTickets}
+                   renderItem={({ item: ticket }) => (
+                     <TouchableOpacity
+                       style={styles.ticketMenuItem}
+                       onPress={() => {
+                         // Optionnel: action quand on clique sur un ticket
+                       }}
+                     >
+                       <View style={styles.ticketMenuInfo}>
+                         <Text style={styles.ticketMenuTitle}>{ticket.title}</Text>
+                         <Text style={styles.ticketMenuAssignee}>
+                           {getTicketAssigneeName(ticket.assignee)}
+                         </Text>
+                       </View>
+                       <View style={styles.ticketMenuStatus}>
+                         <Text style={[
+                           styles.ticketMenuStatusText,
+                           { color: ticket.status === 'todo' ? colors.warning : ticket.status === 'in-progress' ? colors.primary : colors.success }
+                         ]}>
+                           {ticket.status === 'todo' ? 'À faire' : ticket.status === 'in-progress' ? 'En cours' : 'Terminé'}
+                         </Text>
+                       </View>
+                     </TouchableOpacity>
+                   )}
+                   keyExtractor={(item) => item.id}
+                   showsVerticalScrollIndicator={false}
+                   style={styles.ticketsMenu}
+                   nestedScrollEnabled={true}
+                 />
+               )}
+             </View>
+           )}
+         </View>
 
         {/* Section des membres */}
         <View style={styles.tabContent}>
@@ -278,17 +414,33 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
               style={styles.emptyState}
               animationType="fade"
             >
-              <Text style={styles.emptyIcon}>👥</Text>
-              <Text style={sharedStyles.emptyTitle}>Aucun membre</Text>
-              <Text style={sharedStyles.emptyDescription}>
+              <View style={styles.emptyIcon}>
+                <Icon 
+                  source="account-group" 
+                  size={48} 
+                  color={colors.textSecondary}
+                />
+              </View>
+              <Text style={styles.emptyTitle}>Aucun membre</Text>
+              <Text style={styles.emptyDescription}>
                 Invitez des utilisateurs à rejoindre ce projet.
               </Text>
             </AnimatedView>
           ) : (
-            projectMembers.map((member, index) => renderUser(member, index))
+            <FlatList
+              data={projectMembers}
+              renderItem={renderUser}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.membersList}
+              nestedScrollEnabled={true}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+            />
           )}
         </View>
-      </ScrollView>
+      </View>
 
       {/* Modals */}
       <GenericModal
@@ -340,7 +492,13 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
                 <Text style={styles.modalButtonText}>
                   {selectedUser ? projectMembers.find(u => u.id === selectedUser)?.displayName : 'Sélectionner un utilisateur'}
                 </Text>
-                <Text style={styles.modalArrow}>▼</Text>
+                <View style={styles.modalArrow}>
+                  <Icon 
+                    source="chevron-down" 
+                    size={16} 
+                    color={colors.textSecondary}
+                  />
+                </View>
               </TouchableOpacity>
             }
           >
@@ -364,7 +522,13 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
                 <Text style={styles.modalButtonText}>
                   {selectedGroup ? projectGroups.find(g => g.id === selectedGroup)?.name : 'Sélectionner un groupe'}
                 </Text>
-                <Text style={styles.modalArrow}>▼</Text>
+                <View style={styles.modalArrow}>
+                  <Icon 
+                    source="chevron-down" 
+                    size={16} 
+                    color={colors.textSecondary}
+                  />
+                </View>
               </TouchableOpacity>
             }
           >
@@ -378,7 +542,81 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
           </Menu>
         </View>
       </GenericModal>
-    </View>
+
+       {/* Modal d'assignation de ticket */}
+       <GenericModal
+         visible={showAssignModal}
+         onDismiss={() => setShowAssignModal(false)}
+         title="Assigner un ticket"
+         icon="assignment"
+         primaryButtonText="Assigner"
+         onPrimaryPress={handleAssignTicket}
+         onSecondaryPress={() => setShowAssignModal(false)}
+         loading={loading}
+         disabled={!selectedTicket || !selectedAssignee}
+         primaryIcon="check"
+       >
+         <View style={styles.modalSection}>
+           <Text style={styles.modalLabel}>Ticket</Text>
+           <TouchableOpacity 
+             style={styles.modalButton}
+             onPress={() => setShowTicketMenu(!showTicketMenu)}
+           >
+             <Text style={styles.modalButtonText}>
+               {selectedTicket ? projectTickets.find(t => t.id === selectedTicket)?.title : 'Sélectionner un ticket'}
+             </Text>
+             <Text style={styles.modalArrow}>▼</Text>
+           </TouchableOpacity>
+           
+           {showTicketMenu && (
+             <View style={styles.dropdownMenu}>
+               {getUnassignedTickets().map((ticket) => (
+                 <TouchableOpacity
+                   key={ticket.id}
+                   style={styles.dropdownItem}
+                   onPress={() => {
+                     setSelectedTicket(ticket.id);
+                     setShowTicketMenu(false);
+                   }}
+                 >
+                   <Text style={styles.dropdownItemText}>{ticket.title}</Text>
+                 </TouchableOpacity>
+               ))}
+             </View>
+           )}
+         </View>
+
+         <View style={styles.modalSection}>
+           <Text style={styles.modalLabel}>Assigné à</Text>
+           <TouchableOpacity 
+             style={styles.modalButton}
+             onPress={() => setShowAssigneeMenu(!showAssigneeMenu)}
+           >
+             <Text style={styles.modalButtonText}>
+               {selectedAssignee ? projectMembers.find(u => u.id === selectedAssignee)?.displayName : 'Sélectionner un utilisateur'}
+             </Text>
+             <Text style={styles.modalArrow}>▼</Text>
+           </TouchableOpacity>
+           
+           {showAssigneeMenu && (
+             <View style={styles.dropdownMenu}>
+               {projectMembers.map((member) => (
+                 <TouchableOpacity
+                   key={member.id}
+                   style={styles.dropdownItem}
+                   onPress={() => {
+                     setSelectedAssignee(member.id);
+                     setShowAssigneeMenu(false);
+                   }}
+                 >
+                   <Text style={styles.dropdownItemText}>{member.displayName}</Text>
+                 </TouchableOpacity>
+               ))}
+             </View>
+           )}
+         </View>
+       </GenericModal>
+    </SafeAreaView>
   );
 };
 

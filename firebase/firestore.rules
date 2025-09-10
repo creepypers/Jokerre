@@ -1,17 +1,79 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Projets - accessibles aux membres
-    match /projects/{projectId} {
-      allow read, write: if request.auth != null && 
-        request.auth.uid in resource.data.members;
+    // Utilisateurs - accessibles à l'utilisateur lui-même
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null;
+    }
+    
+    // Projets - accessibles aux membres et aux utilisateurs invités
+    match /projects/{projectId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid in resource.data.members || 
+         request.auth.token.email in resource.data.invitedEmails);
+      allow create: if request.auth != null;
+      // Permettre à un utilisateur invité de s'ajouter au projet
+      allow write: if request.auth != null && 
+        (request.auth.uid in resource.data.members || 
+         request.auth.token.email in resource.data.invitedEmails);
     }
     
     // Tickets - accessibles aux membres du projet
     match /tickets/{ticketId} {
-      allow read, write: if request.auth != null && 
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
         request.auth.uid in get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members;
+      allow create: if request.auth != null;
+    }
+    
+    // Groupes d'équipe - accessibles aux membres et aux utilisateurs invités
+    match /teamGroups/{groupId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid in resource.data.members || 
+         request.auth.token.email in resource.data.invitedEmails ||
+         // Permettre aux membres du projet de voir les groupes d'équipe
+         (resource.data.projectId != null && 
+          exists(/databases/$(database)/documents/projects/$(resource.data.projectId)) &&
+          request.auth.uid in get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members) ||
+         // Permettre à tous les utilisateurs authentifiés de lire les groupes d'équipe
+         // pour permettre l'affichage des badges de groupe
+         true);
+      allow write: if request.auth != null && 
+        (request.auth.uid in resource.data.members || 
+         request.auth.token.email in resource.data.invitedEmails ||
+         // Permettre aux utilisateurs invités à un projet de rejoindre les groupes de ce projet
+         (resource.data.projectId != null && 
+          exists(/databases/$(database)/documents/projects/$(resource.data.projectId)) &&
+          request.auth.token.email in get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.invitedEmails) ||
+         // Permettre aux membres du projet de gérer les groupes d'équipe
+         (resource.data.projectId != null && 
+          exists(/databases/$(database)/documents/projects/$(resource.data.projectId)) &&
+          request.auth.uid in get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.members) ||
+         // Permettre aux créateurs de groupes de gérer leurs groupes
+         request.auth.uid == resource.data.createdBy);
+      allow create: if request.auth != null;
+    }
+    
+    // Notifications - accessibles à l'utilisateur concerné
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+    }
+    
+    // Commentaires sur les tickets - accessibles aux membres du projet
+    match /comments/{commentId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(get(/databases/$(database)/documents/tickets/$(resource.data.ticketId)).data.projectId)).data.members;
+      allow create: if request.auth != null;
+    }
+    
+    // Invitations - accessibles à l'utilisateur invité et à l'expéditeur
+    match /invitations/{invitationId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.invitedBy || 
+         request.auth.token.email == resource.data.email);
       allow create: if request.auth != null;
     }
   }

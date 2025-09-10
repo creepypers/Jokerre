@@ -201,31 +201,5 @@ export const sharedStyles = StyleSheet.create({
   slideUp: {
     transform: [{ translateY: 0 }],
   },
-  
-  // Empty states
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptyDescription: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
 });
 
-export const gradients = {
-  primary: ['#D97706', '#F59E0B'],
-  secondary: ['#FDE68A', '#FEF3C7'],
-  background: ['#FEF3C7', '#FDE68A'],
-};

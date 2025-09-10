@@ -32,18 +32,13 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
+  backButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   headerText: {
     flex: 1,
-  },
-  groupHeaderInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  groupColorIndicator: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    marginRight: 12,
   },
   headerTitle: {
     fontSize: 24,
@@ -110,12 +105,13 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   addMemberButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
     fontWeight: '600',
   },
   membersList: {
-    gap: 12,
+    paddingBottom: 20,
+    maxHeight: 300,
   },
   memberCard: {
     backgroundColor: 'white',
@@ -125,9 +121,10 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
+    marginBottom: 8,
   },
   memberContent: {
-    padding: 16,
+    padding: 12,
   },
   memberInfo: {
     flexDirection: 'row',
@@ -135,37 +132,43 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   memberAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   memberAvatarText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
   memberDetails: {
     flex: 1,
   },
   memberName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   memberEmail: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
     marginBottom: 4,
   },
   memberRole: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.success,
-    fontWeight: '600',
+    fontWeight: '200',
+    backgroundColor: colors.success + '20',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    alignItems: 'center',
   },
   removeButton: {
     paddingHorizontal: 12,
@@ -183,7 +186,10 @@ export const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyIcon: {
-    fontSize: 48,
+    margin: 0,
+    padding: 0,
+    width: 48,
+    height: 48,
     marginBottom: 16,
   },
   emptyTitle: {
@@ -205,18 +211,29 @@ export const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: colors.primary,
   },
+  groupHeaderInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  groupColorIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 12,
+  },
   modalHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
   modalIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+    fontSize: 24,
+    marginRight: 12,
   },
   addMemberDescription: {
     fontSize: 14,
     color: colors.textSecondary,
-    textAlign: 'center',
     marginBottom: 20,
     lineHeight: 20,
   },

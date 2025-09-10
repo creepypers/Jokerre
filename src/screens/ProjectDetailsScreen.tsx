@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Dimensions, TouchableOpacity, Text, Alert } from 'react-native';
-import { Title, FAB, TextInput, Card, Paragraph, SegmentedButtons, Menu, Divider, Checkbox } from 'react-native-paper';
+import { View, ScrollView, Dimensions, TouchableOpacity, Text, Alert, SafeAreaView, FlatList } from 'react-native';
+import { Title, FAB, TextInput, Card, Paragraph, SegmentedButtons, Menu, Divider, Checkbox, Icon } from 'react-native-paper';
 import { useProject, Ticket } from '../context/ProjectContext';
 import { sharedStyles } from '../styles/shared.styles';
 import { colors } from '../utils/colors';
@@ -15,7 +15,14 @@ interface ProjectDetailsScreenProps {
 const { width } = Dimensions.get('window');
 
 export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navigation, route }) => {
-  const { project } = route.params;
+  const { project: rawProject } = route.params;
+  
+  // Convert serialized dates back to Date objects
+  const project = {
+    ...rawProject,
+    createdAt: new Date(rawProject.createdAt),
+    ...(rawProject.updatedAt && { updatedAt: new Date(rawProject.updatedAt) })
+  };
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [ticketTitle, setTicketTitle] = useState('');
   const [ticketDescription, setTicketDescription] = useState('');
@@ -27,7 +34,7 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
   const [activeTab, setActiveTab] = useState('todo');
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   
-  const { getTicketsByProject, createTicket, updateTicket, createDummyTicket, loading: ticketsLoading, projectUsers } = useProject();
+  const { getTicketsByProject, createTicket, updateTicket, loading: ticketsLoading, projectUsers } = useProject();
 
   const tickets = getTicketsByProject(project.id);
   const todoTickets = tickets.filter(ticket => ticket.status === 'todo');
@@ -45,6 +52,29 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
   // Obtenir les membres du projet
   const projectMembers = projectUsers.filter(user => project.members.includes(user.id));
 
+  const handleEditTicket = (ticket: Ticket) => {
+    setEditingTicket(ticket);
+    setTicketTitle(ticket.title);
+    setTicketDescription(ticket.description || '');
+    setTicketPriority(ticket.priority);
+    
+    // Trouver l'assigné actuel
+    const currentAssignee = projectMembers.find(member => member.id === ticket.assignee);
+    setSelectedAssignee(currentAssignee ? { id: currentAssignee.id, name: currentAssignee.displayName || currentAssignee.email } : null);
+    
+    setShowCreateModal(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTicket(null);
+    setTicketTitle('');
+    setTicketDescription('');
+    setTicketAssignee('');
+    setSelectedAssignee(null);
+    setTicketPriority('medium');
+    setShowCreateModal(false);
+  };
+
   const handleCreateTicket = async () => {
     if (!ticketTitle.trim()) {
       return;
@@ -54,24 +84,39 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
     try {
       if (editingTicket) {
         // Mode édition
-        await updateTicket(editingTicket.id, {
+        const updateData: any = {
           title: ticketTitle.trim(),
           description: ticketDescription.trim(),
-          assignee: selectedAssignee?.id || undefined,
           priority: ticketPriority,
-        });
+        };
+        
+        // Only add assignee if it's not undefined
+        if (selectedAssignee?.id) {
+          updateData.assignee = selectedAssignee.id;
+        } else if (selectedAssignee === null) {
+          // Explicitly set to null to remove assignee
+          updateData.assignee = null;
+        }
+        
+        await updateTicket(editingTicket.id, updateData);
         Alert.alert('Succès', 'Ticket modifié avec succès');
       } else {
         // Mode création
-      await createTicket({
-        title: ticketTitle.trim(),
-        description: ticketDescription.trim(),
-        status: 'todo',
-        projectId: project.id,
-        priority: ticketPriority,
-        tags: [],
-        assignee: selectedAssignee?.id || undefined,
-      });
+        const ticketData: any = {
+          title: ticketTitle.trim(),
+          description: ticketDescription.trim(),
+          status: 'todo',
+          projectId: project.id,
+          priority: ticketPriority,
+          tags: [],
+        };
+        
+        // Only add assignee if it's not undefined
+        if (selectedAssignee?.id) {
+          ticketData.assignee = selectedAssignee.id;
+        }
+        
+        await createTicket(ticketData);
       }
       setTicketTitle('');
       setTicketDescription('');
@@ -88,29 +133,6 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
     }
   };
 
-  const handleCreateDummyTickets = async () => {
-    Alert.alert(
-      'Créer des tickets factices',
-      'Voulez-vous créer des tickets de test pour ce projet ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Créer', 
-          onPress: async () => {
-            setLoading(true);
-            try {
-              await createDummyTicket(project.id);
-              Alert.alert('Succès', 'Tickets factices créés avec succès !');
-            } catch (error: any) {
-              Alert.alert('Erreur', 'Impossible de créer les tickets factices');
-            } finally {
-              setLoading(false);
-            }
-          }
-        }
-      ]
-    );
-  };
 
   const handleTicketMove = async (ticket: Ticket, newStatus: 'todo' | 'in-progress' | 'done') => {
     try {
@@ -120,75 +142,6 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
     }
   };
 
-  const handleEditTicket = (ticket: Ticket) => {
-    setEditingTicket(ticket);
-    setTicketTitle(ticket.title);
-    setTicketDescription(ticket.description);
-    setTicketPriority(ticket.priority);
-    setTicketAssignee(ticket.assignee || '');
-    setSelectedAssignee(ticket.assignee ? projectMembers.find(m => m.id === ticket.assignee) ? { id: ticket.assignee, name: projectMembers.find(m => m.id === ticket.assignee)!.displayName } : null : null);
-    setShowCreateModal(true);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingTicket(null);
-    setTicketTitle('');
-    setTicketDescription('');
-    setTicketAssignee('');
-    setSelectedAssignee(null);
-    setTicketPriority('medium');
-    setShowCreateModal(false);
-  };
-
-  const renderTicket = (ticket: Ticket) => {
-    const statusConfig = getStatusConfig(ticket.status);
-    const priorityConfig = getPriorityConfig(ticket.priority);
-    
-    return (
-      <Card key={ticket.id} style={styles.ticketCard}>
-        <Card.Content>
-          <View style={styles.ticketHeader}>
-            <View style={styles.ticketInfo}>
-              <Text style={styles.ticketTitle}>{ticket.title}</Text>
-              {ticket.description && (
-                <Text style={styles.ticketDescription}>{ticket.description}</Text>
-              )}
-            </View>
-            <View style={styles.ticketHeaderRight}>
-              <View style={[styles.statusBadge, { backgroundColor: statusConfig.color }]}>
-                <Text style={styles.statusText}>{statusConfig.label}</Text>
-            </View>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => handleEditTicket(ticket)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.editButtonText}>✏️</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          
-          <View style={styles.ticketFooter}>
-            <View style={styles.priorityContainer}>
-              <Text style={styles.priorityLabel}>Priorité:</Text>
-              <View style={[styles.priorityBadge, { backgroundColor: priorityConfig.color }]}>
-                <Text style={styles.priorityText}>{priorityConfig.label}</Text>
-              </View>
-          </View>
-            
-            {ticket.assignee && (
-            <View style={styles.assigneeContainer}>
-              <Text style={styles.assigneeLabel}>Assigné à:</Text>
-                <Text style={styles.assigneeText}>
-                  {getAssigneeName(ticket.assignee)}
-                </Text>
-            </View>
-          )}
-        </View>
-        </Card.Content>
-      </Card>
-    );
-  };
 
   // Dictionnaires pour éviter la redondance
   const STATUS_CONFIG = {
@@ -237,6 +190,58 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
     return projectMembers.find(m => m.id === assigneeId)?.displayName || 'Inconnu';
   };
 
+  // Fonction pour rendre un ticket individuel
+  const renderTicket = ({ item: ticket }: { item: Ticket }) => {
+    const statusConfig = getStatusConfig(ticket.status);
+    
+    return (
+      <View style={styles.ticketItem}>
+        <View style={styles.ticketHeader}>
+          <Text style={styles.ticketTitle}>{ticket.title}</Text>
+          <TouchableOpacity
+            style={styles.kebabButton}
+            onPress={() => handleEditTicket(ticket)}
+          >
+            <Text style={styles.kebabButtonText}>⋮</Text>
+          </TouchableOpacity>
+        </View>
+        {ticket.description && (
+          <Text style={styles.ticketDescription}>{ticket.description}</Text>
+        )}
+        <View style={styles.ticketFooter}>
+          <View style={styles.ticketInfo}>
+            <Text style={styles.ticketAssignee}>
+              {getAssigneeName(ticket.assignee)}
+            </Text>
+            <View style={[styles.priorityBadge, { backgroundColor: PRIORITY_CONFIG[ticket.priority].color + '20' }]}>
+              <Text style={[styles.priorityText, { color: PRIORITY_CONFIG[ticket.priority].color }]}>
+                {PRIORITY_CONFIG[ticket.priority].label}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.ticketActions}>
+            {statusConfig.prevStatus && statusConfig.prevLabel && (
+              <TouchableOpacity
+                style={[styles.moveButton, styles.moveBackButton]}
+                onPress={() => handleTicketMove(ticket, statusConfig.prevStatus as 'todo' | 'in-progress' | 'done')}
+              >
+                <Text style={styles.moveButtonText}>{statusConfig.prevLabel}</Text>
+              </TouchableOpacity>
+            )}
+            {statusConfig.nextStatus && statusConfig.nextLabel && (
+              <TouchableOpacity
+                style={styles.moveButton}
+                onPress={() => handleTicketMove(ticket, statusConfig.nextStatus as 'todo' | 'in-progress' | 'done')}
+              >
+                <Text style={styles.moveButtonText}>{statusConfig.nextLabel}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   // Fonction générique pour rendre le contenu d'un onglet
   const renderTabContent = (status: string, tickets: Ticket[]) => {
     const statusConfig = getStatusConfig(status);
@@ -244,82 +249,57 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
     return (
       <View style={styles.pageContainer}>
         <Text style={styles.pageTitle}>Tickets {statusConfig.label.toLowerCase()}</Text>
-        <ScrollView 
-          style={styles.ticketsList}
+        <FlatList
+          data={tickets}
+          renderItem={renderTicket}
+          keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-        >
-          {tickets.map((ticket) => (
-            <View key={ticket.id} style={styles.ticketItem}>
-              <Text style={styles.ticketTitle}>{ticket.title}</Text>
-              {ticket.description && (
-                <Text style={styles.ticketDescription}>{ticket.description}</Text>
-              )}
-              <View style={styles.ticketFooter}>
-                <Text style={styles.ticketAssignee}>
-                  {getAssigneeName(ticket.assignee)}
-                </Text>
-                <View style={styles.ticketActions}>
-                  {statusConfig.prevStatus && statusConfig.prevLabel && (
-                    <TouchableOpacity
-                      style={[styles.moveButton, styles.moveBackButton]}
-                      onPress={() => handleTicketMove(ticket, statusConfig.prevStatus as 'todo' | 'in-progress' | 'done')}
-                    >
-                      <Text style={styles.moveButtonText}>{statusConfig.prevLabel}</Text>
-                    </TouchableOpacity>
-                  )}
-                  {statusConfig.nextStatus && statusConfig.nextLabel && (
-                    <TouchableOpacity
-                      style={styles.moveButton}
-                      onPress={() => handleTicketMove(ticket, statusConfig.nextStatus as 'todo' | 'in-progress' | 'done')}
-                    >
-                      <Text style={styles.moveButtonText}>{statusConfig.nextLabel}</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
+          contentContainerStyle={styles.ticketsList}
+        />
       </View>
-          ))}
-        </ScrollView>
-    </View>
-  );
+    );
   };
 
   if (ticketsLoading) {
     return (
-      <View style={sharedStyles.container}>
+      <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
         <Header 
           title={project.name}
-          subtitle="Gestion des tickets"
+          subtitle={project.description || "Gestion des tickets"}
           rightElement={<BackButton onPress={() => navigation.goBack()} />}
         />
       <View style={sharedStyles.loadingContainer}>
           <Text style={{ fontSize: 16, color: colors.textSecondary }}>Chargement des tickets...</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={sharedStyles.container}>
+    <SafeAreaView style={[sharedStyles.container, { backgroundColor: colors.background }]}>
       <Header 
         title={project.name}
-        subtitle="Gestion des tickets"
+        subtitle={project.description || "Gestion des tickets"}
               rightElement={
                 <View style={styles.headerActions}>
                   <TouchableOpacity
                     style={styles.teamButton}
                     onPress={() => navigation.navigate('TeamManagement', { projectId: project.id })}
                   >
-                    <Text style={styles.teamButtonText}>👥 Équipe</Text>
+                    <Icon 
+                      source="account-group" 
+                      size={16} 
+                      color="white"
+                    />
+                    <Text style={styles.teamButtonText}>Équipe</Text>
                   </TouchableOpacity>
                   <BackButton onPress={() => navigation.goBack()} />
                 </View>
               }
       />
 
-      <ScrollView style={styles.content}>
+      <View style={styles.content}>
         <View style={styles.projectInfo}>
-          <Text style={styles.projectDescription}>{project.description}</Text>
           <View style={styles.statsContainer}>
             {PROJECT_STATS.map((stat) => (
               <View key={stat.key} style={styles.statItem}>
@@ -349,31 +329,24 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
           {activeTab === 'todo' && renderTabContent('todo', todoTickets)}
           {activeTab === 'in-progress' && renderTabContent('in-progress', inProgressTickets)}
           {activeTab === 'done' && renderTabContent('done', doneTickets)}
-                </View>
-      </ScrollView>
+        </View>
+      </View>
 
       <View style={styles.fabContainer}>
         <FAB
-          icon="test-tube"
-          style={[styles.fab, styles.dummyFab]}
-          onPress={handleCreateDummyTickets}
-          label="Test"
+          icon="plus"
+          style={styles.fab}
+          onPress={() => setShowCreateModal(true)}
+          label="Nouveau ticket"
           color="white"
         />
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => setShowCreateModal(true)}
-        label="Nouveau ticket"
-        color="white"
-      />
       </View>
 
       <GenericModal
           visible={showCreateModal}
         onDismiss={handleCancelEdit}
         title={editingTicket ? 'Modifier le ticket' : 'Nouveau Ticket'}
-        icon={editingTicket ? '✏️' : '🎫'}
+        icon={editingTicket ? 'pencil' : 'ticket'}
         primaryButtonText={editingTicket ? 'Modifier' : 'Créer'}
         onPrimaryPress={handleCreateTicket}
         onSecondaryPress={handleCancelEdit}
@@ -463,6 +436,6 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
           </View>
             </View>
       </GenericModal>
-          </View>
+          </SafeAreaView>
   );
 };

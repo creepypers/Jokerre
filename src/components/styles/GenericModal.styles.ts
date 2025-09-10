@@ -10,4 +10,7 @@ export const styles = StyleSheet.create({
     fontSize: 32,
     marginBottom: 8,
   },
+  modalIconContainer: {
+    marginBottom: 8,
+  },
 });

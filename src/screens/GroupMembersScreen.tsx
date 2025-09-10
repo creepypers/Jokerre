@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Animated, TouchableOpacity, Text, Alert, Dimensions } from 'react-native';
-import { FAB, Portal, Modal, TextInput, Button, ActivityIndicator, Card, IconButton, List } from 'react-native-paper';
+import { View, ScrollView, Animated, TouchableOpacity, Text, Alert, Dimensions, SafeAreaView, FlatList } from 'react-native';
+import { FAB, Portal, Modal, TextInput, Button, ActivityIndicator, Card, Icon, List } from 'react-native-paper';
 import { useProject, TeamGroup } from '../context/ProjectContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../utils/colors';
@@ -15,9 +15,19 @@ interface GroupMembersScreenProps {
 const { width } = Dimensions.get('window');
 
 export const GroupMembersScreen: React.FC<GroupMembersScreenProps> = ({ navigation, route }) => {
-  const { group } = route.params;
-  const { projectUsers, addUserToGroup, removeUserFromGroup } = useProject();
+  const { groupId } = route.params;
+  const { teamGroups, projectUsers, addUserToGroup, removeUserFromGroup } = useProject();
   const { user } = useAuth();
+  
+  const group = teamGroups.find(g => g.id === groupId);
+  
+  if (!group) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text>Groupe non trouvé</Text>
+      </SafeAreaView>
+    );
+  }
   
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [memberEmail, setMemberEmail] = useState('');
@@ -93,7 +103,7 @@ export const GroupMembersScreen: React.FC<GroupMembersScreenProps> = ({ navigati
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Animated.View 
         style={[
           styles.header,
@@ -104,12 +114,6 @@ export const GroupMembersScreen: React.FC<GroupMembersScreenProps> = ({ navigati
         ]}
       >
         <View style={styles.headerContent}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <IconButton icon="arrow-left" size={24} iconColor="white" />
-          </TouchableOpacity>
           <View style={styles.headerText}>
             <View style={styles.groupHeaderInfo}>
               <View style={[styles.groupColorIndicator, { backgroundColor: group.color }]} />
@@ -119,10 +123,16 @@ export const GroupMembersScreen: React.FC<GroupMembersScreenProps> = ({ navigati
               </View>
             </View>
           </View>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Text style={styles.backButtonText}>← Retour</Text>
+          </TouchableOpacity>
         </View>
       </Animated.View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.content}>
         {/* Statistiques du groupe */}
         <View style={styles.statsContainer}>
           <Card style={styles.statCard}>
@@ -146,21 +156,19 @@ export const GroupMembersScreen: React.FC<GroupMembersScreenProps> = ({ navigati
         <View style={styles.membersContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Membres du groupe</Text>
-            <Button
-              mode="outlined"
-              onPress={() => setShowAddMemberModal(true)}
+            <TouchableOpacity
               style={styles.addMemberButton}
-              icon="account-plus"
-              compact
+              onPress={() => setShowAddMemberModal(true)}
             >
-              Ajouter
-            </Button>
+              <Text style={styles.addMemberButtonText}>+ Ajouter</Text>
+            </TouchableOpacity>
           </View>
 
           {groupMembers.length > 0 ? (
-            <View style={styles.membersList}>
-              {groupMembers.map((member) => (
-                <Card key={member.id} style={styles.memberCard}>
+            <FlatList
+              data={groupMembers}
+              renderItem={({ item: member }) => (
+                <Card style={styles.memberCard}>
                   <Card.Content style={styles.memberContent}>
                     <View style={styles.memberInfo}>
                       <View style={styles.memberAvatar}>
@@ -186,16 +194,26 @@ export const GroupMembersScreen: React.FC<GroupMembersScreenProps> = ({ navigati
                         onPress={() => handleRemoveMember(member.id, member.displayName || member.email)}
                         style={styles.removeButton}
                       >
-                        <IconButton icon="account-remove" size={20} iconColor={colors.error} />
+                        <Icon source="account-remove" size={20} color={colors.error} />
                       </TouchableOpacity>
                     )}
                   </Card.Content>
                 </Card>
-              ))}
-            </View>
+              )}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.membersList}
+              nestedScrollEnabled={true}
+            />
           ) : (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyIcon}>👥</Text>
+              <View style={styles.emptyIcon}>
+                <Icon 
+                  source="account-group" 
+                  size={48} 
+                  color={colors.textSecondary}
+                />
+              </View>
               <Text style={styles.emptyTitle}>Aucun membre</Text>
               <Text style={styles.emptyDescription}>
                 Ajoutez des membres à ce groupe pour commencer
@@ -203,7 +221,7 @@ export const GroupMembersScreen: React.FC<GroupMembersScreenProps> = ({ navigati
             </View>
           )}
         </View>
-      </ScrollView>
+      </View>
 
       <FAB
         style={styles.fab}
@@ -265,7 +283,7 @@ export const GroupMembersScreen: React.FC<GroupMembersScreenProps> = ({ navigati
           </View>
         </Modal>
       </Portal>
-    </View>
+    </SafeAreaView>
   );
 };
 

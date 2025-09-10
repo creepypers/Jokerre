@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../services/firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -35,7 +36,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Update last login time
+      await setDoc(doc(db, 'users', user.uid), {
+        lastLoginAt: new Date(),
+      }, { merge: true });
     } catch (error) {
       throw error;
     }
@@ -43,7 +50,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        id: user.uid,
+        email: user.email,
+        displayName: user.displayName || user.email?.split('@')[0] || 'User',
+        avatar: user.photoURL || null,
+        createdAt: new Date(),
+        lastLoginAt: new Date(),
+        preferences: {
+          theme: 'light',
+          language: 'fr',
+          notifications: true,
+        },
+      });
+      
+      // Update the user's display name if it's not set
+      if (!user.displayName) {
+        await updateProfile(user, {
+          displayName: user.email?.split('@')[0] || 'User'
+        });
+      }
     } catch (error) {
       throw error;
     }

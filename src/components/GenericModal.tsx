@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
-import { Portal, Modal, Button } from 'react-native-paper';
+import { Portal, Modal, Button, Icon } from 'react-native-paper';
 import { sharedStyles } from '../styles/shared.styles';
 import { colors } from '../utils/colors';
 import { styles } from './styles/GenericModal.styles';
@@ -44,7 +44,11 @@ export const GenericModal: React.FC<GenericModalProps> = ({
         contentContainerStyle={sharedStyles.modalContent}
       >
         <View style={styles.modalHeader}>
-          {icon && <Text style={styles.modalIcon}>{icon}</Text>}
+          {icon && (
+            <View style={styles.modalIconContainer}>
+              <Icon source={icon} size={24} color={colors.primary} />
+            </View>
+          )}
           <Text style={sharedStyles.modalTitle}>{title}</Text>
         </View>
         

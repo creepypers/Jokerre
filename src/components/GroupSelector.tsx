@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { Menu } from 'react-native-paper';
 import { colors } from '../utils/colors';
 import { styles } from './styles/GroupSelector.styles';
+
+const { height: screenHeight } = Dimensions.get('window');
 
 interface TeamGroup {
   id: string;
@@ -63,38 +65,43 @@ export const GroupSelector: React.FC<GroupSelectorProps> = ({
       </TouchableOpacity>
 
       {showDropdown && (
-        <View style={styles.groupDropdownList}>
-          <TouchableOpacity
-            style={styles.groupDropdownItem}
-            onPress={() => onGroupSelect('')}
+        <View style={[styles.groupDropdownList, { maxHeight: screenHeight * 0.3 }]}>
+          <ScrollView 
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
           >
-            <View style={styles.groupDropdownItemContent}>
-              <View style={[styles.groupColorDot, { backgroundColor: colors.border }]} />
-              <View style={styles.groupDropdownItemInfo}>
-                <Text style={styles.groupDropdownItemText}>Aucun groupe</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          {groups.map((group) => (
             <TouchableOpacity
-              key={group.id}
               style={styles.groupDropdownItem}
-              onPress={() => onGroupSelect(group.id)}
+              onPress={() => onGroupSelect('')}
             >
               <View style={styles.groupDropdownItemContent}>
-                <View style={[styles.groupColorDot, { backgroundColor: group.color }]} />
+                <View style={[styles.groupColorDot, { backgroundColor: colors.border }]} />
                 <View style={styles.groupDropdownItemInfo}>
-                  <Text style={styles.groupDropdownItemText}>{group.name}</Text>
-                  <Text style={styles.groupDropdownItemDescription}>{group.description}</Text>
+                  <Text style={styles.groupDropdownItemText}>Aucun groupe</Text>
                 </View>
               </View>
             </TouchableOpacity>
-          ))}
-          {groups.length === 0 && (
-            <View style={styles.groupDropdownItem}>
-              <Text style={styles.noGroupsText}>Aucun groupe disponible</Text>
-            </View>
-          )}
+            {groups.map((group) => (
+              <TouchableOpacity
+                key={group.id}
+                style={styles.groupDropdownItem}
+                onPress={() => onGroupSelect(group.id)}
+              >
+                <View style={styles.groupDropdownItemContent}>
+                  <View style={[styles.groupColorDot, { backgroundColor: group.color }]} />
+                  <View style={styles.groupDropdownItemInfo}>
+                    <Text style={styles.groupDropdownItemText}>{group.name}</Text>
+                    <Text style={styles.groupDropdownItemDescription}>{group.description}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+            {groups.length === 0 && (
+              <View style={styles.groupDropdownItem}>
+                <Text style={styles.noGroupsText}>Aucun groupe disponible</Text>
+              </View>
+            )}
+          </ScrollView>
         </View>
       )}
     </View>
