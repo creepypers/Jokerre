@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, ScrollView, Dimensions, TouchableOpacity, Text, Alert, SafeAreaView, FlatList } from 'react-native';
 import { Title, FAB, TextInput, Card, Paragraph, SegmentedButtons, Menu, Divider, Checkbox, Icon } from 'react-native-paper';
 import { useProject, Ticket } from '../context/ProjectContext';
+import { useAuth } from '../context/AuthContext';
 import { sharedStyles } from '../styles/shared.styles';
 import { colors } from '../utils/colors';
 import { styles } from '../styles/ProjectDetailsScreen.styles';
@@ -23,6 +24,7 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
     createdAt: new Date(rawProject.createdAt),
     ...(rawProject.updatedAt && { updatedAt: new Date(rawProject.updatedAt) })
   };
+  const { user } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [ticketTitle, setTicketTitle] = useState('');
   const [ticketDescription, setTicketDescription] = useState('');
@@ -291,7 +293,6 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
                       size={16} 
                       color="white"
                     />
-                    <Text style={styles.teamButtonText}>Équipe</Text>
                   </TouchableOpacity>
                   <BackButton onPress={() => navigation.goBack()} />
                 </View>
@@ -332,15 +333,7 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
         </View>
       </View>
 
-      <View style={styles.fabContainer}>
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          onPress={() => setShowCreateModal(true)}
-          label="Nouveau ticket"
-          color="white"
-        />
-      </View>
+
 
       <GenericModal
           visible={showCreateModal}
@@ -414,9 +407,9 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
               ))}
             </Menu>
           </View>
-          
+          <Text style={styles.priorityLabel}>Priorité</Text>
+
           <View style={styles.priorityContainer}>
-            <Text style={styles.priorityLabel}>Priorité</Text>
           <View style={styles.priorityCheckboxes}>
             {Object.entries(PRIORITY_CONFIG).map(([key, config]) => (
               <View key={key} style={styles.priorityCheckboxItem}>
@@ -436,6 +429,25 @@ export const ProjectDetailsScreen: React.FC<ProjectDetailsScreenProps> = ({ navi
           </View>
             </View>
       </GenericModal>
+
+      {/* Boutons FAB */}
+      <View style={[styles.fabContainer, { marginLeft: 100 }]}>
+        <FAB
+          icon="plus"
+          style={styles.fab}
+          onPress={() => setShowCreateModal(true)}
+          color="white"
+          
+        />
+        {user?.uid === project.createdBy && (
+          <FAB
+            icon="chart-line"
+            style={styles.dashboardFab}
+            onPress={() => navigation.navigate('ProjectDashboard', { project })}
+            color="white"
+          />
+        )}
+      </View>
           </SafeAreaView>
   );
 };

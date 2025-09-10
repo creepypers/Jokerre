@@ -203,22 +203,6 @@ export const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontStyle: 'italic',
   },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'center',
-  },
-  fab: {
-    backgroundColor: colors.primary,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
   modalAssigneeContainer: {
     marginBottom: 16,
   },
@@ -272,5 +256,22 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     marginRight: 8,
+    alignSelf: 'center',
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  fab: {
+    backgroundColor: colors.primary,
+    elevation: 4,
+  },
+  dashboardFab: {
+    backgroundColor: colors.success,
+    elevation: 4,
   },
 });

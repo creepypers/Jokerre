@@ -337,15 +337,12 @@ export const ProjectsScreen: React.FC<ProjectsScreenProps> = ({ navigation }) =>
         <FAB
           icon="account-group"
           style={[styles.fab, styles.groupFab]}
-          onPress={() => navigation.navigate('GroupsDashboard')}
-          label="Groupes"
-          color="white"
+          onPress={() => navigation.navigate('GroupsDashboard')}          color="white"
         />
         <FAB
           icon="plus"
           style={styles.fab}
           onPress={() => setShowCreateModal(true)}
-          label="Nouveau projet"
           color="white"
         />
       </View>

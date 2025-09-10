@@ -11,6 +11,7 @@ import TeamManagementScreen from '../screens/TeamManagementScreen';
 import { GroupsDashboardScreen } from '../screens/GroupsDashboardScreen';
 import GroupMembersScreen from '../screens/GroupMembersScreen';
 import { InvitationsScreen } from '../screens/InvitationsScreen';
+import { ProjectDashboardScreen } from '../screens/ProjectDashboardScreen';
 
 const Stack = createStackNavigator();
 
@@ -69,6 +70,11 @@ export const AppNavigator: React.FC = () => {
         <Stack.Screen 
           name="Invitations" 
           component={InvitationsScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="ProjectDashboard" 
+          component={ProjectDashboardScreen} 
           options={{ headerShown: false }} 
         />
           </>
