@@ -104,10 +104,10 @@ npm run ios
 - **Palette de couleurs** : Thème africain moderne
 
 ### 🔄 En cours de développement
-- Assignation des tickets à des utilisateurs
+- Assignation des tickets à des utilisateurs (Fait)
 - Notifications locales
 - Mode hors ligne
-- Recherche et filtres
+- Recherche et filtres (Fait)
 
 ## 🏗️ Architecture
 
@@ -138,8 +138,8 @@ src/
 - [x] Phase 3 : Liste projets + création
 - [x] Phase 4 : Détails projet + Kanban
 - [x] Phase 5 : Gestion des tickets
-- [ ] Phase 6 : Assignation des tickets
-- [ ] Phase 7 : Améliorations UI
+- [x] Phase 6 : Assignation des tickets
+- [x] Phase 7 : Améliorations UI
 - [ ] Phase 8 : Notifications
 - [ ] Phase 9 : Tests multi-plateforme
 
@@ -151,6 +151,3 @@ src/
 4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
 5. Ouvrez une Pull Request
 
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
