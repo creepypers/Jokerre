@@ -949,7 +949,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
           
           // Retirer l'email de la liste des emails invités APRÈS avoir ajouté aux teams
-          const updatedInvitedEmails = (projectData.invitedEmails || []).filter(email => email !== invitation.email);
+          const updatedInvitedEmails = (projectData.invitedEmails || []).filter((email: string) => email !== invitation.email);
           await updateDoc(doc(db, 'projects', invitation.targetId), {
             invitedEmails: updatedInvitedEmails
           });
@@ -969,7 +969,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.log('Group data:', groupData);
         if (!groupData.members.includes(user.uid)) {
           // Retirer l'email de la liste des emails invités
-          const updatedInvitedEmails = (groupData.invitedEmails || []).filter(email => email !== invitation.email);
+          const updatedInvitedEmails = (groupData.invitedEmails || []).filter((email: string) => email !== invitation.email);
           console.log('Updating group with new member:', user.uid);
           await updateDoc(doc(db, 'teamGroups', invitation.targetId), {
             members: [...groupData.members, user.uid],

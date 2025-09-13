@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { colors } from '../utils/colors';
 import { sharedStyles } from '../styles/shared.styles';
 import { styles } from '../styles/TeamManagementScreen.styles';
-import { Header, GenericModal, AnimatedView, BackButton, ContextMenu } from '../components';
+import { Header, GenericModal, AnimatedView, BackButton, ContextMenu, CompactFilters } from '../components';
 
 const { width } = Dimensions.get('window');
 
@@ -41,6 +41,10 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
   const [showTicketMenu, setShowTicketMenu] = useState(false);
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  
+  // Filtres pour les membres
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [groupFilter, setGroupFilter] = useState('all');
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [selectedTicket, setSelectedTicket] = useState<string>('');
@@ -50,9 +54,24 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
   const [refreshing, setRefreshing] = useState(false);
 
   const project = projects.find(p => p.id === projectId);
-  const projectMembers = projectUsers.filter(u => project?.members.includes(u.id));
+  const allProjectMembers = projectUsers.filter(u => project?.members.includes(u.id));
   const projectGroups = teamGroups.filter(g => project?.teamGroups.includes(g.id));
   const projectTickets = getTicketsByProject(projectId);
+  
+  // Appliquer les filtres aux membres
+  const filteredMembers = allProjectMembers.filter(member => {
+    const roleMatch = roleFilter === 'all' || 
+      (roleFilter === 'owner' && member.id === project?.createdBy) ||
+      (roleFilter === 'member' && member.id !== project?.createdBy);
+    
+    const groupMatch = groupFilter === 'all' ||
+      (groupFilter === 'no-group' && !projectGroups.some(g => g.members.includes(member.id))) ||
+      (groupFilter !== 'no-group' && projectGroups.some(g => g.id === groupFilter && g.members.includes(member.id)));
+    
+    return roleMatch && groupMatch;
+  });
+  
+  const projectMembers = filteredMembers;
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -401,13 +420,17 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
         <View style={styles.tabContent}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Membres du Projet</Text>
+            
             <TouchableOpacity
               style={styles.inviteButton}
               onPress={() => setShowInviteModal(true)}
             >
               <Text style={styles.inviteButtonText}>+ Inviter</Text>
+              
             </TouchableOpacity>
+            
           </View>
+          
           
           {projectMembers.length === 0 ? (
             <AnimatedView 
@@ -428,6 +451,53 @@ const TeamManagementScreen: React.FC<TeamManagementScreenProps> = ({ navigation,
             </AnimatedView>
           ) : (
             <FlatList
+              ListHeaderComponent={
+          <CompactFilters
+            filters={[
+              {
+                title: "Rôle",
+                icon: "account-key",
+                options: [
+                  { value: "all", label: "Tous", count: allProjectMembers.length },
+                  {
+                    value: "owner",
+                    label: "Propriétaire",
+                    count: allProjectMembers.filter((m) => m.id === project?.createdBy).length,
+                  },
+                  {
+                    value: "member",
+                    label: "Membres",
+                    count: allProjectMembers.filter((m) => m.id !== project?.createdBy).length,
+                  },
+                ],
+                selectedValue: roleFilter,
+                onValueChange: setRoleFilter,
+              },
+              {
+                title: "Groupe",
+                icon: "account-group",
+                options: [
+                  { value: "all", label: "Tous", count: allProjectMembers.length },
+                  {
+                    value: "no-group",
+                    label: "Sans groupe",
+                    count: allProjectMembers.filter((m) => 
+                      !projectGroups.some(g => g.members.includes(m.id))
+                    ).length,
+                  },
+                  ...projectGroups.map((group) => ({
+                    value: group.id,
+                    label: group.name,
+                    count: allProjectMembers.filter((m) => group.members.includes(m.id)).length,
+                    color: group.color,
+                  })),
+                ],
+                selectedValue: groupFilter,
+                onValueChange: setGroupFilter,
+              },
+            ]}
+            style={styles.compactFilters}
+          /> }
               data={projectMembers}
               renderItem={renderUser}
               keyExtractor={(item) => item.id}

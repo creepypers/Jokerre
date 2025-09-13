@@ -31,7 +31,7 @@ export const sharedStyles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: colors.text,
+    color: colors.textPrimary,
     letterSpacing: -0.5,
   },
   headerSubtitle: {
@@ -151,7 +151,7 @@ export const sharedStyles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text,
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   subtitle: {

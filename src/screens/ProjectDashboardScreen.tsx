@@ -56,6 +56,7 @@ export const ProjectDashboardScreen: React.FC<any> = ({ navigation, route }) => 
     high: projectTickets.filter(t => t.priority === 'high').length,
     medium: projectTickets.filter(t => t.priority === 'medium').length,
     low: projectTickets.filter(t => t.priority === 'low').length,
+    emergency : projectTickets.filter(t => t.priority === 'urgent').length
   };
 
   // Calculer le pourcentage de completion
@@ -95,9 +96,11 @@ export const ProjectDashboardScreen: React.FC<any> = ({ navigation, route }) => 
 
   // Calculer les tickets par priorité
   const priorityStats = {
+    emergency: ticketStats.emergency,
     high: ticketStats.high,
     medium: ticketStats.medium,
     low: ticketStats.low,
+
   };
 
   // Calculer les tickets par statut
@@ -137,10 +140,10 @@ export const ProjectDashboardScreen: React.FC<any> = ({ navigation, route }) => 
 
   // Graphique en barres pour les priorités
   const priorityChartData = {
-    labels: ['Haute', 'Moyenne', 'Basse'],
+    labels: ["Urgente",'Haute', 'Moyenne', 'Basse'],
     datasets: [
       {
-        data: [priorityStats.high, priorityStats.medium, priorityStats.low],
+        data: [priorityStats.emergency,priorityStats.high, priorityStats.medium, priorityStats.low],
         color: (opacity = 1) => `rgba(217, 119, 6, ${opacity})`, // colors.primary
       },
     ],

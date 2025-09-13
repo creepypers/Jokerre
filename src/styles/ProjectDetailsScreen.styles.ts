@@ -274,4 +274,18 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.success,
     elevation: 4,
   },
+  compactFilters: {
+    marginBottom: 16,
+  },
+  compactFiltersInline: {
+    marginBottom: 0,
+    flexShrink: 0,
+  },
+  pageTitleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    paddingTop: 2,
+  },
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+ import React from 'react';
 import { Menu, Button } from 'react-native-paper';
 import { colors } from '../utils/colors';
 
@@ -38,8 +38,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           icon={icon}
           onPress={onOpen}
           textColor={iconColor}
-          style={{ minWidth: iconSize + 10, height: iconSize + 10 }}
-        />
+          style={{ minWidth: iconSize + 10, height: iconSize + 10 }} children={undefined}        />
       }
     >
       {items.map((item, index) => (

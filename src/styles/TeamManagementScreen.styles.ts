@@ -382,8 +382,10 @@ export const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   membersList: {
+    paddingTop: 0,
     paddingBottom: 20,
     maxHeight: 300,
+    marginTop: -8,
   },
   // Styles manquants pour les erreurs
   statIcon: {
@@ -436,5 +438,9 @@ export const styles = StyleSheet.create({
     width: 16,
     height: 16,
     marginLeft: 8,
+  },
+  compactFilters: {
+    marginBottom: 10,
+    marginTop:10
   },
 });

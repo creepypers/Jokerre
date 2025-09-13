@@ -1,7 +1,7 @@
-import { StyleSheet, Dimensions } from 'react-native';
-import { colors } from '../utils/colors';
+import { StyleSheet, Dimensions } from "react-native";
+import { colors } from "../utils/colors";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   container: {
@@ -14,13 +14,13 @@ export const styles = StyleSheet.create({
   },
   accessDeniedContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 32,
   },
   accessDeniedTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginTop: 16,
     marginBottom: 8,
@@ -28,7 +28,7 @@ export const styles = StyleSheet.create({
   accessDeniedText: {
     fontSize: 16,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 24,
   },
   overviewCard: {
@@ -43,35 +43,35 @@ export const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginBottom: 16,
   },
   overviewStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   statItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   statNumber: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   progressContainer: {
     marginTop: 8,
   },
   progressInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   progressText: {
@@ -80,7 +80,7 @@ export const styles = StyleSheet.create({
   },
   progressPercentage: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
   },
   progressBar: {
@@ -89,12 +89,12 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   statusContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginTop: 8,
   },
   statusItem: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
   },
   statusIndicator: {
@@ -110,12 +110,12 @@ export const styles = StyleSheet.create({
   },
   statusCount: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
   },
   priorityContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginTop: 8,
   },
   priorityItem: {
@@ -126,14 +126,14 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
   },
   priorityChipText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   memberPerformance: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -143,7 +143,7 @@ export const styles = StyleSheet.create({
   },
   memberName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.textPrimary,
     marginBottom: 4,
   },
@@ -152,16 +152,16 @@ export const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   memberStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   memberStatItem: {
-    alignItems: 'center',
+    alignItems: "center",
     marginLeft: 16,
   },
   memberStatNumber: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 2,
   },
   memberStatLabel: {
@@ -169,16 +169,16 @@ export const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   groupPerformance: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   groupInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   groupColor: {
@@ -189,15 +189,15 @@ export const styles = StyleSheet.create({
   },
   groupName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.textPrimary,
   },
   groupStats: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   groupTotal: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginBottom: 2,
   },
@@ -209,8 +209,8 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -225,7 +225,7 @@ export const styles = StyleSheet.create({
   infoValue: {
     fontSize: 14,
     color: colors.textPrimary,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   chart: {
     marginVertical: 8,
@@ -233,12 +233,12 @@ export const styles = StyleSheet.create({
   },
   noDataContainer: {
     height: 220,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   noDataText: {
     fontSize: 16,
     color: colors.textSecondary,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 });

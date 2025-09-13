@@ -1,9 +1,8 @@
-export { Header } from './Header';
-export { GenericModal } from './GenericModal';
-export { AnimatedView } from './AnimatedView';
-export { BackButton } from './BackButton';
-export { ContextMenu } from './ContextMenu';
-export { ToggleButtons } from './ToggleButtons';
-export { GroupSelector } from './GroupSelector';
-export { InvitationModal } from './InvitationModal';
-export { InvitationsList } from './InvitationsList';
+export { Header } from "./Header";
+export { GenericModal } from "./GenericModal";
+export { AnimatedView } from "./AnimatedView";
+export { BackButton } from "./BackButton";
+export { ContextMenu } from "./ContextMenu";
+export { ToggleButtons } from "./ToggleButtons";
+export { GroupSelector } from "./GroupSelector";
+export { CompactFilters } from "./CompactFilters";

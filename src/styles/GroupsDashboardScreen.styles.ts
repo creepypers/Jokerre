@@ -6,17 +6,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
+
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -49,8 +39,23 @@ export const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   content: {
-    flex: 1,
     padding: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  count: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -67,6 +72,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    margin:10
   },
   statContent: {
     alignItems: 'center',
@@ -90,7 +96,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 20,
@@ -289,5 +295,26 @@ export const styles = StyleSheet.create({
   groupsList: {
     paddingBottom: 20,
     maxHeight: 400,
+  },
+  compactFilters: {
+    marginBottom: 8,
+  },
+  listWrapper: {
+    flex: 1,
+
+  
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  listContainer: {
+    paddingBottom: 20,
+    margin:20
   },
 });
